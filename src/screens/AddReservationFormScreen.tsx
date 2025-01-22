@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Text, TextInput, Button, HelperText, Menu, Provider } from 'react-native-paper';
+import DatePicker from 'react-native-date-picker';
 
 const AddReservationFormScreen = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
@@ -13,35 +14,27 @@ const AddReservationFormScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [date, setDate] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
   const navigation = useNavigation();
 
-  const roomOptions = ['101', '102', '103', '104']; // Opciones de habitaciones
-  const paymentMethods = ['Efectivo', 'Tarjeta', 'Transferencia'];
+  const roomOptions = ['101', '102', '103', '104'];
 
   useEffect(() => {
-    // Intercepta el evento de salir de la pantalla
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       if (!isFormDirty) {
-        return; // Permite navegar si no hay cambios
+        return;
       }
-      e.preventDefault(); // Detiene la navegación
-
-      // Muestra la alerta
-      Alert.alert(
-        'Salir sin guardar',
-        '¿Estás seguro de que quieres salir sin guardar los cambios?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Salir',
-            style: 'destructive',
-            onPress: () => navigation.dispatch(e.data.action), // Permite la navegación
-          },
-        ]
-      );
+      e.preventDefault();
+      Alert.alert('Salir sin guardar', '¿Estás seguro de que quieres salir sin guardar los cambios?', [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Salir',
+          style: 'destructive',
+          onPress: () => navigation.dispatch(e.data.action),
+        },
+      ]);
     });
-
-    return unsubscribe; // Limpia el listener al desmontar el componente
+    return unsubscribe;
   }, [isFormDirty, navigation]);
 
   const handleInputChange = () => {
@@ -64,14 +57,14 @@ const AddReservationFormScreen = () => {
           visible={menuVisible}
           onDismiss={() => setMenuVisible(false)}
           anchor={
-            <TextInput
-              label="Habitación"
-              value={room}
-              mode="outlined"
-              onFocus={() => setMenuVisible(true)}
-              style={styles.input}
-              right={<TextInput.Icon icon="chevron-down" />}
-            />
+            <TouchableOpacity
+              style={styles.touchableInput}
+              onPress={() => setMenuVisible(true)} // Abre el menú al presionar
+            >
+              <Text style={styles.text}>
+                {room || 'Seleccionar habitación'}
+              </Text>
+            </TouchableOpacity>
           }
         >
           {roomOptions.map((option, index) => (
@@ -87,19 +80,28 @@ const AddReservationFormScreen = () => {
           ))}
         </Menu>
 
-        {/* Fecha */}
-        <TextInput
-          label="Fecha de Registro"
-          value={date}
-          onChangeText={(text) => {
-            setDate(text);
+        {/* Fecha con DatePicker */}
+        <TouchableOpacity
+          style={styles.touchableInput}
+          onPress={() => setDatePickerVisible(true)} // Abre el calendario al presionar
+        >
+          <Text style={styles.text}>
+            {date ? new Date(date).toLocaleDateString() : 'Seleccionar fecha'}
+          </Text>
+        </TouchableOpacity>
+        <HelperText type="info">Selecciona una fecha del calendario</HelperText>
+        <DatePicker
+          modal
+          open={datePickerVisible}
+          date={date ? new Date(date) : new Date()}
+          onConfirm={(selectedDate) => {
+            console.log('Fecha seleccionada:', selectedDate);
+            setDate(selectedDate.toISOString());
+            setDatePickerVisible(false);
             handleInputChange();
           }}
-          mode="outlined"
-          style={styles.input}
-          placeholder="YYYY-MM-DD"
+          onCancel={() => setDatePickerVisible(false)}
         />
-        <HelperText type="info">Formato: Año-Mes-Día</HelperText>
 
         {/* Nombre del Huésped */}
         <TextInput
@@ -111,6 +113,7 @@ const AddReservationFormScreen = () => {
           }}
           mode="outlined"
           style={styles.input}
+          left={<TextInput.Icon icon="account" />}
         />
 
         {/* Número de Celular */}
@@ -124,6 +127,7 @@ const AddReservationFormScreen = () => {
           mode="outlined"
           keyboardType="phone-pad"
           style={styles.input}
+          left={<TextInput.Icon icon="phone" />}
         />
 
         {/* Compañía */}
@@ -136,6 +140,7 @@ const AddReservationFormScreen = () => {
           }}
           mode="outlined"
           style={styles.input}
+          left={<TextInput.Icon icon="briefcase-outline" />}
         />
 
         {/* Monto */}
@@ -149,21 +154,7 @@ const AddReservationFormScreen = () => {
           mode="outlined"
           keyboardType="numeric"
           style={styles.input}
-        />
-
-        {/* Forma de Pago */}
-        <TextInput
-          label="Forma de Pago"
-          value={paymentMethod}
-          onFocus={() => {
-            setPaymentMethod(paymentMethods[0]);
-          }}
-          onChangeText={(text) => {
-            setPaymentMethod(text);
-            handleInputChange();
-          }}
-          mode="outlined"
-          style={styles.input}
+          left={<TextInput.Icon icon="cash" />}
         />
 
         {/* Botón Guardar */}
@@ -171,7 +162,7 @@ const AddReservationFormScreen = () => {
           mode="contained"
           onPress={handleSubmit}
           style={styles.button}
-          disabled={!room || !guestName || !phone || !company || !amount || !paymentMethod || !date}
+          disabled={!room || !guestName || !phone || !company || !amount || !date}
         >
           Guardar
         </Button>
@@ -194,6 +185,17 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 15,
+  },
+  touchableInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    padding: 10,
+    marginBottom: 15,
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#000',
   },
   button: {
     marginTop: 20,
