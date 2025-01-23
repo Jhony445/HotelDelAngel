@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Text, TextInput, Button, HelperText, Menu, Provider } from 'react-native-paper';
-import DatePicker from 'react-native-date-picker';
+import { Text, TextInput, Button, Menu, Provider } from 'react-native-paper';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AddReservationFormScreen = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
@@ -12,12 +12,12 @@ const AddReservationFormScreen = () => {
   const [company, setCompany] = useState('');
   const [amount, setAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState<Date | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation();
 
-  const roomOptions = ['101', '102', '103', '104'];
+  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I','202-J',  '204-L'];
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -41,6 +41,14 @@ const AddReservationFormScreen = () => {
     setIsFormDirty(true);
   };
 
+  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+      handleInputChange();
+    }
+  };
+
   const handleSubmit = () => {
     console.log('Formulario enviado:', { room, guestName, phone, company, amount, paymentMethod, date });
     setIsFormDirty(false);
@@ -58,12 +66,19 @@ const AddReservationFormScreen = () => {
           onDismiss={() => setMenuVisible(false)}
           anchor={
             <TouchableOpacity
-              style={styles.touchableInput}
-              onPress={() => setMenuVisible(true)} // Abre el menú al presionar
+              onPress={() => {
+                setMenuVisible(true);
+                Keyboard.dismiss();
+              }}
             >
-              <Text style={styles.text}>
-                {room || 'Seleccionar habitación'}
-              </Text>
+              <TextInput
+                label="Seleccionar habitación"
+                value={room}
+                mode="outlined"
+                style={styles.input}
+                editable={false}
+                left={<TextInput.Icon icon="bed" />}
+              />
             </TouchableOpacity>
           }
         >
@@ -80,28 +95,27 @@ const AddReservationFormScreen = () => {
           ))}
         </Menu>
 
-        {/* Fecha con DatePicker */}
-        <TouchableOpacity
-          style={styles.touchableInput}
-          onPress={() => setDatePickerVisible(true)} // Abre el calendario al presionar
-        >
-          <Text style={styles.text}>
-            {date ? new Date(date).toLocaleDateString() : 'Seleccionar fecha'}
-          </Text>
+        {/* Selector de Fecha */}
+        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+          <View pointerEvents="box-only">
+            <TextInput
+              label="Seleccionar fecha"
+              value={date ? date.toLocaleDateString() : ''}
+              mode="outlined"
+              style={styles.input}
+              editable={false}
+              left={<TextInput.Icon icon="calendar" />}
+            />
+          </View>
         </TouchableOpacity>
-        <HelperText type="info">Selecciona una fecha del calendario</HelperText>
-        <DatePicker
-          modal
-          open={datePickerVisible}
-          date={date ? new Date(date) : new Date()}
-          onConfirm={(selectedDate) => {
-            console.log('Fecha seleccionada:', selectedDate);
-            setDate(selectedDate.toISOString());
-            setDatePickerVisible(false);
-            handleInputChange();
-          }}
-          onCancel={() => setDatePickerVisible(false)}
-        />
+        {showDatePicker && (
+          <DateTimePicker
+            value={date || new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+          />
+        )}
 
         {/* Nombre del Huésped */}
         <TextInput
@@ -153,6 +167,7 @@ const AddReservationFormScreen = () => {
           }}
           mode="outlined"
           keyboardType="numeric"
+          placeholder="Ejemplo: 1000.00"
           style={styles.input}
           left={<TextInput.Icon icon="cash" />}
         />
@@ -185,17 +200,6 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 15,
-  },
-  touchableInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    padding: 10,
-    marginBottom: 15,
-    justifyContent: 'center',
-  },
-  text: {
-    color: '#000',
   },
   button: {
     marginTop: 20,
