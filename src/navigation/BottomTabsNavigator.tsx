@@ -6,10 +6,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AddReservationFormScreen from '../screens/AddReservationFormScreen';
-import { RootStackParamList, TabParamList } from './navigationTypes'; // Asegúrate de importar los tipos
+import { RootStackParamList, TabParamList } from './navigationTypes';
 
-const Tab = createBottomTabNavigator<TabParamList>(); // Usamos el tipo para el Tab Navigator
-const Stack = createStackNavigator<RootStackParamList>(); // Usamos el tipo para el Stack Navigator
+const Tab = createBottomTabNavigator<TabParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const TabNavigator = () => (
   <Tab.Navigator
@@ -39,7 +39,20 @@ const AppNavigator = () => (
   <NavigationContainer>
     <Stack.Navigator>
       <Stack.Screen name="Tabs" component={TabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name="AddReservationForm" component={AddReservationFormScreen} options={{ title: 'Agregar Reservación' }} />
+      <Stack.Screen
+  name="AddReservationForm"
+  component={AddReservationFormScreen}
+  options={{
+    title: 'Agregar Reservación',
+    headerStyle: {
+      backgroundColor: '#007bff',
+    },
+    headerTintColor: '#ffffff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  }}
+/>
     </Stack.Navigator>
   </NavigationContainer>
 );

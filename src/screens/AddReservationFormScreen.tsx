@@ -17,7 +17,7 @@ const AddReservationFormScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation();
 
-  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I','202-J',  '204-L'];
+  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L'];
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -58,7 +58,6 @@ const AddReservationFormScreen = () => {
   return (
     <Provider>
       <View style={styles.container}>
-        <Text style={styles.title}>Formulario de Reservación</Text>
 
         {/* Selector de Habitación */}
         <Menu
@@ -190,20 +189,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff', // Fondo blanco
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    color: '#333', // Texto oscuro para contraste
   },
   input: {
     marginBottom: 15,
+    backgroundColor: '#ffffff', // Fondo blanco para los inputs
+    elevation: 2, // Sombra suave en Android
+    shadowColor: '#000', // Sombra suave en iOS
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
   },
   button: {
     marginTop: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
+    color: '#ffffff', // Texto blanco para contraste
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
+
 
 export default AddReservationFormScreen;
