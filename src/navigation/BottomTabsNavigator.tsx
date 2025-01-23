@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -8,36 +8,50 @@ import SettingsScreen from '../screens/SettingsScreen';
 import StoreScreen from '../screens/StoreScreen';
 import AddReservationFormScreen from '../screens/AddReservationFormScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
+import { Keyboard, View, Platform } from 'react-native';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
-const TabNavigator = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      headerShown: false,
-      tabBarIcon: ({ color, size }) => {
-        let iconName: string = '';
+const TabNavigator = () => {
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {});
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {});
 
-        if (route.name === 'Home') {
-          iconName = 'home';
-        } else if (route.name === 'Store') {
-          iconName = 'storefront';
-        } else if (route.name === 'Settings') {
-          iconName = 'settings';
-        }
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
-        return <Ionicons name={iconName} size={size} color={color} />;
-      },
-      tabBarActiveTintColor: 'blue',
-      tabBarInactiveTintColor: 'gray',
-    })}
-  >
-    <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Inicio' }} />
-    <Tab.Screen name="Store" component={StoreScreen} options={{ tabBarLabel: 'Tienda' }} />
-    <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: 'Configuración' }} />
-  </Tab.Navigator>
-);
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ color, size }) => {
+          let iconName = '';
+
+          if (route.name === 'Home') {
+            iconName = 'home';
+          } else if (route.name === 'Store') {
+            iconName = 'storefront';
+          } else if (route.name === 'Settings') {
+            iconName = 'settings';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: 'blue',
+        tabBarInactiveTintColor: 'gray',
+        tabBarHideOnKeyboard: true, // 🔥 Oculta la barra cuando el teclado aparece
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Inicio' }} />
+      <Tab.Screen name="Store" component={StoreScreen} options={{ tabBarLabel: 'Tienda' }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: 'Configuración' }} />
+    </Tab.Navigator>
+  );
+};
 
 const AppNavigator = () => (
   <NavigationContainer>
@@ -48,13 +62,9 @@ const AppNavigator = () => (
         component={AddReservationFormScreen}
         options={{
           title: 'Agregar Reservación',
-          headerStyle: {
-            backgroundColor: '#007bff',
-          },
+          headerStyle: { backgroundColor: '#007bff' },
           headerTintColor: '#ffffff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
+          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
     </Stack.Navigator>
