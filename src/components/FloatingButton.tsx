@@ -3,7 +3,7 @@ import { TouchableOpacity, StyleSheet, View, Text } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface FloatingButtonProps {
-  onPress: () => void; // Acción al presionar el botón
+  onPress: () => void;
 }
 
 const FloatingButton: React.FC<FloatingButtonProps> = ({ onPress }) => {
@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'blue',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5, // Sombra en Android
-    shadowColor: '#000', // Sombra en iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,

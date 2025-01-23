@@ -8,7 +8,7 @@ interface ScreenTitleProps {
 }
 
 const ScreenTitle: React.FC<ScreenTitleProps> = ({ title }) => {
-  const insets = useSafeAreaInsets(); // Obtener márgenes seguros del dispositivo
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingVertical: 10,
-    backgroundColor: 'white', // Fondo opcional
+    backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },

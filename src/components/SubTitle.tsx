@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 interface SubTitleProps {
-  text: string; // Texto principal del subtítulo
+  text: string;
 }
 
 const SubTitle: React.FC<SubTitleProps> = ({ text }) => {
@@ -15,7 +15,7 @@ const SubTitle: React.FC<SubTitleProps> = ({ text }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20, // Ajusta la separación del título principal
+    marginTop: 20,
     alignItems: 'center',
   },
   text: {

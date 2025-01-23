@@ -15,7 +15,7 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScreenTitle title="Inicio" />
+      <ScreenTitle title="Hotel del Angel" />
       <View style={styles.content}>
         <SubTitle text="Reservaciones próximas" />
       </View>
