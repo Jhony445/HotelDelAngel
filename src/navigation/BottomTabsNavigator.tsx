@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import StoreScreen from '../screens/StoreScreen';
 import AddReservationFormScreen from '../screens/AddReservationFormScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
 
@@ -20,6 +21,8 @@ const TabNavigator = () => (
 
         if (route.name === 'Home') {
           iconName = 'home';
+        } else if (route.name === 'Store') {
+          iconName = 'storefront';
         } else if (route.name === 'Settings') {
           iconName = 'settings';
         }
@@ -31,6 +34,7 @@ const TabNavigator = () => (
     })}
   >
     <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Inicio' }} />
+    <Tab.Screen name="Store" component={StoreScreen} options={{ tabBarLabel: 'Tienda' }} />
     <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: 'Configuración' }} />
   </Tab.Navigator>
 );
@@ -40,19 +44,19 @@ const AppNavigator = () => (
     <Stack.Navigator>
       <Stack.Screen name="Tabs" component={TabNavigator} options={{ headerShown: false }} />
       <Stack.Screen
-  name="AddReservationForm"
-  component={AddReservationFormScreen}
-  options={{
-    title: 'Agregar Reservación',
-    headerStyle: {
-      backgroundColor: '#007bff',
-    },
-    headerTintColor: '#ffffff',
-    headerTitleStyle: {
-      fontWeight: 'bold',
-    },
-  }}
-/>
+        name="AddReservationForm"
+        component={AddReservationFormScreen}
+        options={{
+          title: 'Agregar Reservación',
+          headerStyle: {
+            backgroundColor: '#007bff',
+          },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
+        }}
+      />
     </Stack.Navigator>
   </NavigationContainer>
 );

@@ -3,6 +3,7 @@ import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard } from 'r
 import { useNavigation } from '@react-navigation/native';
 import { TextInput, Button, Menu, Provider } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { agregarReserva } from '../services/firebase/AddReservation';
 
 const AddReservationFormScreen = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
@@ -13,14 +14,14 @@ const AddReservationFormScreen = () => {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState<Date | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [paymentMenuVisible, setPaymentMenuVisible] = useState(false); // Estado para el menú de método de pago
-  const [paymentMethod, setPaymentMethod] = useState(''); // Método de pago seleccionado
+  const [paymentMenuVisible, setPaymentMenuVisible] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1); // Estado para el paso actual
+  const [currentStep, setCurrentStep] = useState(1);
   const navigation = useNavigation();
 
   const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L'];
-  const paymentOptions = ['Efectivo', 'Tarjeta de Crédito', 'Transferencia Bancaria']; // Opciones de método de pago
+  const paymentOptions = ['Efectivo', 'Tarjeta de Crédito', 'Transferencia Bancaria'];
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -53,11 +54,12 @@ const AddReservationFormScreen = () => {
   };
 
   const handleSubmit = () => {
-    console.log('Formulario enviado:', { room, guestName, phone, company, amount, date, paymentMethod });
+    console.log("Formulario enviado:", { room, guestName, phone, company, amount, date, paymentMethod });
+    agregarReserva(room, date!, guestName, phone, company, amount, paymentMethod);
     setIsFormDirty(false);
     navigation.goBack();
   };
-
+  
   return (
     <Provider>
       <View style={styles.container}>
