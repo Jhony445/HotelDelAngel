@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard } from 'react-native';
+import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { TextInput, Button, Menu, Provider } from 'react-native-paper';
+import { TextInput, Button, Menu, Provider, Dialog, Portal, Text } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { agregarReserva } from '../services/firebase/AddReservation';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { checkRoomAvailability } from '../services/firebase/checkAvailability';
 
 const AddReservationFormScreen = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
@@ -18,6 +20,10 @@ const AddReservationFormScreen = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [dialogSuccess, setDialogSuccess] = useState(false);
   const navigation = useNavigation();
 
   const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L'];
@@ -53,13 +59,46 @@ const AddReservationFormScreen = () => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log("Formulario enviado:", { room, guestName, phone, company, amount, date, paymentMethod });
-    agregarReserva(room, date!, guestName, phone, company, amount, paymentMethod);
-    setIsFormDirty(false);
-    navigation.goBack();
+  const handleNextStep = async () => {
+    if (!room || !date) {
+      Alert.alert("Error", "Selecciona una habitación y una fecha");
+      return;
+    }
+
+    try {
+      const isAvailable = await checkRoomAvailability(room, date);
+
+      if (!isAvailable) {
+        Alert.alert("Habitación ocupada", "La habitación seleccionada no está disponible para esta fecha. Por favor, elige otra fecha u otra habitación.");
+        return;
+      }
+
+      setCurrentStep(2);
+    } catch (error) {
+      Alert.alert("Error", "No se pudo verificar la disponibilidad. Intenta de nuevo más tarde.");
+    }
   };
-  
+
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setDialogVisible(true);
+    setDialogMessage('Guardando reserva...');
+
+    try {
+      await agregarReserva(room, date!, guestName, phone, company, amount, paymentMethod);
+      setDialogSuccess(true);
+      setDialogMessage('¡Reserva guardada con éxito!');
+    } catch (error) {
+      setDialogSuccess(false);
+      setDialogMessage('Error al guardar la reserva');
+    } finally {
+      setLoading(false);
+      setIsFormDirty(false);
+    }
+  };
+
+
   return (
     <Provider>
       <View style={styles.container}>
@@ -125,7 +164,7 @@ const AddReservationFormScreen = () => {
             {/* Botón Siguiente */}
             <Button
               mode="contained"
-              onPress={() => setCurrentStep(2)}
+              onPress={handleNextStep}
               style={styles.button}
               disabled={!room || !date}
             >
@@ -248,6 +287,45 @@ const AddReservationFormScreen = () => {
           </>
         )}
       </View>
+
+      {/* Modal de Carga y Resultado */}
+      <Portal>
+        <Dialog visible={dialogVisible} dismissable={false}>
+          <Dialog.Content style={styles.dialogContent}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#6200ea" />
+            ) : (
+              <>
+                <View style={dialogSuccess ? styles.successIcon : styles.errorIcon}>
+                  <MaterialCommunityIcons
+                    name={dialogSuccess ? 'check-circle' : 'close-circle'}
+                    size={30}
+                    color="white"
+                  />
+                </View>
+                {/* Mensaje descriptivo */}
+                <View style={styles.messageContainer}>
+                  <Text style={dialogSuccess ? styles.successText : styles.errorText}>
+                    {dialogSuccess
+                      ? '¡Se registró correctamente!'
+                      : 'Error al agregar, vuelve a intentarlo más tarde'}
+                  </Text>
+                </View>
+                <Button
+                  onPress={() => {
+                    setDialogVisible(false);
+                    setIsFormDirty(false);
+                    navigation.goBack();
+                  }}
+                >
+                  Aceptar
+                </Button>
+              </>
+            )}
+          </Dialog.Content>
+        </Dialog>
+      </Portal>
+
     </Provider>
   );
 };
@@ -286,6 +364,42 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: '#999090',
+  },
+  dialogContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successIcon: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'green',
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorIcon: {
+    width: 50,
+    height: 50,
+    backgroundColor: 'red',
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  messageContainer: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  successText: {
+    color: 'green',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 

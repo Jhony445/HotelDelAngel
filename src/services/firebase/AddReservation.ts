@@ -1,8 +1,6 @@
-// src/services/firebase/firestoreService.ts
 import { db } from "./firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
 
-// Función para agregar reserva
 export const agregarReserva = async (
   room: string,
   date: Date,
@@ -13,7 +11,6 @@ export const agregarReserva = async (
   paymentMethod: string
 ) => {
   try {
-    // Agregar la reserva a Firestore
     const docRef = await addDoc(collection(db, "reservaciones"), {
       room,
       date,
@@ -22,7 +19,7 @@ export const agregarReserva = async (
       company,
       amount,
       paymentMethod,
-      createdAt: new Date(), // Fecha de creación de la reserva
+      createdAt: new Date(),
     });
     console.log("Reserva agregada con ID:", docRef.id);
   } catch (error) {

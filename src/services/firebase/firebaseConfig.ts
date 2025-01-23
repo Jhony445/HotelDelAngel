@@ -1,10 +1,8 @@
-// src/services/firebase/firebaseConfig.ts
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Tu configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCrkCTp7NP71QyCdsxA4QpzxlJmnFSbJ8A",
   authDomain: "reservation-app-45fd0.firebaseapp.com",
@@ -14,7 +12,6 @@ const firebaseConfig = {
   appId: "1:427265318803:web:13e8a7f70a69e20d3f5266",
 };
 
-// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 
 // Servicios de Firebase
@@ -22,5 +19,4 @@ export const auth = getAuth(app); // Autenticación
 export const db = getFirestore(app); // Firestore
 export const storage = getStorage(app); // Almacenamiento
 
-// Exporta la app para otros usos si es necesario
 export default app;
