@@ -8,7 +8,9 @@ export const agregarReserva = async (
   phone: string,
   company: string,
   amount: string,
-  paymentMethod: string
+  paymentMethod: string,
+  paymentMethodType: string,
+  advancePayment: string
 ) => {
   try {
     const docRef = await addDoc(collection(db, "reservaciones"), {
@@ -19,10 +21,13 @@ export const agregarReserva = async (
       company,
       amount,
       paymentMethod,
+      paymentMethodType,
+      advancePayment,
       createdAt: new Date(),
     });
     console.log("Reserva agregada con ID:", docRef.id);
   } catch (error) {
     console.error("Error agregando la reserva:", error);
+    throw error;
   }
 };
