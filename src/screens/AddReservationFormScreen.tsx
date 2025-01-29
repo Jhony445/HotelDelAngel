@@ -35,12 +35,15 @@ const AddReservationFormScreen = () => {
 
   const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L'];
   const paymentMethodValues: { [key: string]: string } = {
-    "Reservación pagada": "PagoCompleto",
-    "Reservación (50%)": "PagoParcial",
-    "Registro directo": "RegistroDirecto",
+    "Reservación pagada": "Pago completo",
+    "Reservación (50%)": "Pago parcial",
+    "Registro directo": "Registro directo",
   };
-  
- // const paymentOptions = ['Efectivo', 'Tarjeta de Crédito', 'Transferencia Bancaria'];
+  const paymentMethodTypeValues: { [key: string]: string } = {
+    "Efectivo": "Efectivo",
+    "Tarjeta de Crédito": "Tarjeta",
+    "Transferencia": "Transferencia",
+  };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -98,24 +101,28 @@ const AddReservationFormScreen = () => {
       Alert.alert("Error", "Por favor completa todos los campos antes de guardar.");
       return;
     }
-  
+
     setLoading(true);
     setDialogVisible(true);
     setDialogMessage("Guardando reserva...");
-  
+
     try {
-      await agregarReserva(
+      // Calcular el estado automáticamente
+      const status = paymentMethod === "Reservación (50%)" ? "Reservado" : "Pagado";
+
+      await agregarReserva({
         room,
-        date!,
+        date: date!,
         guestName,
         phone,
-        company,
+        company: company || 'No especificado',
         amount,
-        paymentMethodValues[paymentMethod] || paymentMethod, // Mapea a su valor correspondiente
-        paymentMethodType,
-        advancePayment
-      );
-  
+        paymentMethod: paymentMethodValues[paymentMethod],
+        paymentMethodType: paymentMethodType, // ✅ Valor directo del estado
+        advancePayment,
+        status 
+      });
+
       setDialogSuccess(true);
       setDialogMessage("¡Reserva guardada con éxito!");
     } catch (error) {
@@ -126,8 +133,7 @@ const AddReservationFormScreen = () => {
       setIsFormDirty(false);
     }
   };
-  
-  
+
 
 
   return (
@@ -206,136 +212,146 @@ const AddReservationFormScreen = () => {
 
         {currentStep === 2 && (
           <>
-            {/* Tipo de Pago */}
-            <Menu
-              visible={paymentMenuVisible}
-              onDismiss={() => setPaymentMenuVisible(false)}
-              anchor={
-                <TouchableOpacity
-                  onPress={() => {
-                    setPaymentMenuVisible(true);
-                    Keyboard.dismiss();
-                  }}
+            {currentStep === 2 && (
+              <>
+                {/* Tipo de Pago (Reservación) */}
+                <Menu
+                  visible={paymentMenuVisible}
+                  onDismiss={() => setPaymentMenuVisible(false)}
+                  anchor={
+                    <TouchableOpacity
+                      onPress={() => {
+                        setPaymentMenuVisible(true);
+                        Keyboard.dismiss();
+                      }}
+                    >
+                      <TextInput
+                        label="Tipo de Reservación"
+                        value={paymentMethod}
+                        mode="outlined"
+                        style={[styles.input, !paymentMethod && styles.placeholderText]}
+                        editable={false}
+                        left={<TextInput.Icon icon="credit-card-outline" />}
+                      />
+                    </TouchableOpacity>
+                  }
                 >
-                  <TextInput
-                    label="Tipo de Pago"
-                    value={paymentMethod}
-                    mode="outlined"
-                    style={[styles.input, !paymentMethod && styles.placeholderText]}
-                    editable={false}
-                    left={<TextInput.Icon icon="credit-card-outline" />}
-                  />
-                </TouchableOpacity>
-              }
-            >
-              {['Reservación (50%)', 'Reservación pagada', 'Registro directo'].map((option, index) => (
-                <Menu.Item
-                  key={index}
-                  title={option}
-                  onPress={() => {
-                    setPaymentMethod(option);
-                    setAmount(''); // Resetear valores dinámicos
-                    setAdvancePayment('');
-                    setPaymentMenuVisible(false);
-                    handleInputChange();
-                  }}
-                />
-              ))}
-            </Menu>
+                  {Object.keys(paymentMethodValues).map((option, index) => (
+                    <Menu.Item
+                      key={index}
+                      title={option}
+                      onPress={() => {
+                        setPaymentMethod(option);
+                        setAmount('');
+                        setAdvancePayment('');
+                        setPaymentMenuVisible(false);
+                        handleInputChange();
+                      }}
+                    />
+                  ))}
+                </Menu>
 
-            {/* Método de Pago */}
-            <Menu
-              visible={methodMenuVisible}
-              onDismiss={() => setMethodMenuVisible(false)}
-              anchor={
-                <TouchableOpacity
-                  onPress={() => {
-                    setMethodMenuVisible(true);
-                    Keyboard.dismiss();
-                  }}
+                {/* Método de Pago (Efectivo/Tarjeta) */}
+                <Menu
+                  visible={methodMenuVisible}
+                  onDismiss={() => setMethodMenuVisible(false)}
+                  anchor={
+                    <TouchableOpacity
+                      onPress={() => {
+                        setMethodMenuVisible(true);
+                        Keyboard.dismiss();
+                      }}
+                    >
+                      <TextInput
+                        label="Método de Pago"
+                        value={Object.keys(paymentMethodTypeValues).find(
+                          key => paymentMethodTypeValues[key] === paymentMethodType
+                        ) || ''}
+                        mode="outlined"
+                        style={[styles.input, !paymentMethodType && styles.placeholderText]}
+                        editable={false}
+                        left={<TextInput.Icon icon="cash" />}
+                      />
+                    </TouchableOpacity>
+                  }
                 >
+                  {Object.keys(paymentMethodTypeValues).map((option, index) => (
+                    <Menu.Item
+                      key={index}
+                      title={option}
+                      onPress={() => {
+                        setPaymentMethodType(paymentMethodTypeValues[option]);
+                        setMethodMenuVisible(false);
+                        handleInputChange();
+                      }}
+                    />
+                  ))}
+                </Menu>
+                {/* Campos Dinámicos Según el Tipo de Pago */}
+                {paymentMethod === 'Reservación (50%)' && (
+                  <>
+                    <TextInput
+                      label="Monto Total"
+                      value={amount}
+                      onChangeText={(text) => {
+                        const numericValue = text.replace(/[^0-9.]/g, '');
+                        setAmount(numericValue);
+                        setAdvancePayment((parseFloat(numericValue || '0') * 0.5).toFixed(2));
+                        handleInputChange();
+                      }}
+                      mode="outlined"
+                      keyboardType="numeric"
+                      placeholder="Ejemplo: 1000.00"
+                      style={[styles.input, !amount && styles.placeholderText]}
+                      left={<TextInput.Icon icon="cash" />}
+                    />
+                    <TextInput
+                      label="Adelanto (50%)"
+                      value={advancePayment}
+                      editable={false}
+                      mode="outlined"
+                      style={styles.input}
+                      left={<TextInput.Icon icon="cash-multiple" />}
+                    />
+                  </>
+                )}
+
+                {paymentMethod === 'Reservación pagada' && (
                   <TextInput
-                    label="Método de Pago"
-                    value={paymentMethodType}
+                    label="Monto Total"
+                    value={amount}
+                    onChangeText={(text) => {
+                      const numericValue = text.replace(/[^0-9.]/g, '');
+                      setAmount(numericValue);
+                      handleInputChange();
+                    }}
                     mode="outlined"
-                    style={[styles.input, !paymentMethodType && styles.placeholderText]}
-                    editable={false}
+                    keyboardType="numeric"
+                    placeholder="Ejemplo: 1000.00"
+                    style={[styles.input, !amount && styles.placeholderText]}
                     left={<TextInput.Icon icon="cash" />}
                   />
-                </TouchableOpacity>
-              }
-            >
-              {['Tarjeta de Crédito', 'Efectivo', 'Transferencia'].map((option, index) => (
-                <Menu.Item
-                  key={index}
-                  title={option}
-                  onPress={() => {
-                    setPaymentMethodType(option); // Actualizar método de pago
-                    setMethodMenuVisible(false);
-                    handleInputChange();
-                  }}
-                />
-              ))}
-            </Menu>
+                )}
 
-            {/* Campos Dinámicos Según el Tipo de Pago */}
-            {paymentMethod === 'Reservación (50%)' && (
-              <>
-                <TextInput
-                  label="Monto Total"
-                  value={amount}
-                  onChangeText={(text) => {
-                    setAmount(text);
-                    setAdvancePayment((parseFloat(text) * 0.5).toFixed(2));
-                    handleInputChange();
-                  }}
-                  mode="outlined"
-                  keyboardType="numeric"
-                  placeholder="Ejemplo: 1000.00"
-                  style={[styles.input, !amount && styles.placeholderText]}
-                  left={<TextInput.Icon icon="cash" />}
-                />
-                <TextInput
-                  label="Adelanto (50%)"
-                  value={advancePayment}
-                  editable={false}
-                  mode="outlined"
-                  style={styles.input}
-                  left={<TextInput.Icon icon="cash-multiple" />}
-                />
+                {paymentMethod === 'Registro directo' && (
+                  <TextInput
+                    label="Pago Total"
+                    value={amount}
+                    onChangeText={(text) => {
+                      const numericValue = text.replace(/[^0-9.]/g, '');
+                      setAmount(numericValue);
+                      handleInputChange();
+                    }}
+                    mode="outlined"
+                    keyboardType="numeric"
+                    placeholder="Ejemplo: 1000.00"
+                    style={[styles.input, !amount && styles.placeholderText]}
+                    left={<TextInput.Icon icon="cash-register" />}
+                  />
+                )}
+
+                {/* Resto del formulario... */}
               </>
-            )}
-
-            {paymentMethod === 'Reservación pagada' && (
-              <TextInput
-                label="Monto Total"
-                value={amount}
-                onChangeText={(text) => {
-                  setAmount(text);
-                  handleInputChange();
-                }}
-                mode="outlined"
-                keyboardType="numeric"
-                placeholder="Ejemplo: 1000.00"
-                style={[styles.input, !amount && styles.placeholderText]}
-                left={<TextInput.Icon icon="cash" />}
-              />
-            )}
-
-            {paymentMethod === 'Registro directo' && (
-              <TextInput
-                label="Pago Total"
-                value={amount}
-                onChangeText={(text) => {
-                  setAmount(text);
-                  handleInputChange();
-                }}
-                mode="outlined"
-                keyboardType="numeric"
-                placeholder="Ejemplo: 1000.00"
-                style={[styles.input, !amount && styles.placeholderText]}
-                left={<TextInput.Icon icon="cash-register" />}
-              />
             )}
 
             {/* Información del Cliente */}
