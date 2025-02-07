@@ -117,7 +117,7 @@ const AddReservationFormScreen = () => {
         company: company || 'No especificado',
         amount,
         paymentMethod: paymentMethodValues[paymentMethod],
-        paymentMethodType: paymentMethodType, // ✅ Valor directo del estado
+        paymentMethodType: paymentMethodType,
         advancePayment,
         status,
         peoples: peoples ? parseInt(peoples) : 1,

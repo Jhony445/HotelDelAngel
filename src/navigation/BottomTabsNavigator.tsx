@@ -7,6 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import StoreScreen from '../screens/StoreScreen';
 import AddReservationFormScreen from '../screens/AddReservationFormScreen';
+import ReservationDetailsScreen from '../screens/ReservationDetailsScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
 import { Keyboard, View, Platform } from 'react-native';
 
@@ -65,6 +66,16 @@ const AppNavigator = () => (
           headerStyle: { backgroundColor: '#007bff' },
           headerTintColor: '#ffffff',
           headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+      <Stack.Screen 
+        name="ReservationDetails" 
+        component={ReservationDetailsScreen}
+        options={{ 
+          title: 'Detalles',
+          headerStyle: { backgroundColor: '#007bff' },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: { fontWeight: 'bold' }
         }}
       />
     </Stack.Navigator>

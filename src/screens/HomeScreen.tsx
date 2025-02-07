@@ -25,7 +25,6 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Cambio 2: Modificar el useEffect existente
   useFocusEffect(
     React.useCallback(() => {
       let isActive = true;
@@ -85,7 +84,7 @@ const HomeScreen = () => {
       style={styles.flex}
     >
       <View style={styles.container}>
-        <ScreenTitle title="Hotel del Angel" />
+        <ScreenTitle title="Hotel del Ángel" />
         <FilterBar onFilterChange={setFilter} />
         <View style={styles.content}>
           <View style={styles.subtitleContainer}>
@@ -97,13 +96,22 @@ const HomeScreen = () => {
             renderItem={({ item }) => (
               <ReservationListItem
                 guestName={item.guestName || ''}
-                date={item.date || ''}
+                date={item.date}
                 room={item.room || ''}
                 paymentMethod={item.paymentMethod || 'No especificado'}
                 amount={item.amount || '0'}
                 status={item.status || 'pendiente'}
                 paymentMethodType={item.paymentMethodType || 'No especificado'}
                 advancePayment={item.advancePayment || '0'}
+                onPress={() =>
+                  navigation.navigate('ReservationDetails', {
+                    reservation: {
+                      ...item,
+                      date: item.rawDate?.toMillis(), // Usar timestamp original
+                      createdAt: item.createdAt?.toMillis()
+                    }
+                  })
+                }
               />
             )}
             contentContainerStyle={styles.listContainer}

@@ -11,6 +11,7 @@ interface ReservationListItemProps {
   status: string;
   paymentMethodType: string;
   advancePayment?: string;
+  onPress: () => void;
 }
 
 const ReservationListItem: React.FC<ReservationListItemProps> = ({
@@ -21,7 +22,8 @@ const ReservationListItem: React.FC<ReservationListItemProps> = ({
   amount,
   status,
   paymentMethodType,
-  advancePayment = "0"
+  advancePayment = "0",
+  onPress
 }) => {
   const getStatusDetails = () => {
     const currentStatus = (status || '').toLowerCase();
@@ -43,7 +45,7 @@ const ReservationListItem: React.FC<ReservationListItemProps> = ({
   const statusInfo = getStatusDetails();
 
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container}  onPress={onPress}>
       <View style={styles.header}>
         <Text style={styles.guestName}>{guestName}</Text>
         <View style={[styles.statusBadge, { backgroundColor: statusInfo.color }]}>
