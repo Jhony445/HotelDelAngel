@@ -16,6 +16,7 @@ import FloatingButton from '../components/FloatingButton';
 import FilterBar from '../components/FilterBar';
 import ReservationListItem from '../components/ReservationListItem';
 import { obtenerReservaciones } from '../services/firebase/firestoreQueries';
+import { useFocusEffect } from '@react-navigation/native';
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -24,22 +25,35 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const data = await obtenerReservaciones();
-        setReservations(data);
-        setError('');
-      } catch (err) {
-        setError('Error cargando las reservaciones');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Cambio 2: Modificar el useEffect existente
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
 
-    fetchReservations();
-  }, []);
+      const fetchReservations = async () => {
+        try {
+          const data = await obtenerReservaciones();
+          if (isActive) {
+            setReservations(data);
+            setError('');
+          }
+        } catch (err) {
+          if (isActive) {
+            setError('Error cargando las reservaciones');
+            console.error(err);
+          }
+        } finally {
+          if (isActive) setLoading(false);
+        }
+      };
+
+      fetchReservations();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   const handleAddPress = () => {
     navigation.navigate('AddReservationForm');
@@ -72,14 +86,11 @@ const HomeScreen = () => {
     >
       <View style={styles.container}>
         <ScreenTitle title="Hotel del Angel" />
-
         <FilterBar onFilterChange={setFilter} />
-
         <View style={styles.content}>
           <View style={styles.subtitleContainer}>
             <SubTitle text="Reservaciones próximas" />
           </View>
-
           <FlatList
             data={filteredReservations}
             keyExtractor={(item) => item.id}
@@ -104,7 +115,6 @@ const HomeScreen = () => {
             }
           />
         </View>
-
         <FloatingButton onPress={handleAddPress} />
       </View>
     </KeyboardAvoidingView>

@@ -6,12 +6,14 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { agregarReserva } from '../services/firebase/AddReservation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { checkRoomAvailability } from '../services/firebase/checkAvailability';
+import { KeyboardAvoidingView, ScrollView } from 'react-native';
 
 const AddReservationFormScreen = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [room, setRoom] = useState('');
   const [guestName, setGuestName] = useState('');
   const [phone, setPhone] = useState('');
+  const [peoples, setPeoples] = useState('');
   const [company, setCompany] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -28,10 +30,8 @@ const AddReservationFormScreen = () => {
   const navigation = useNavigation();
   const [reservationType, setReservationType] = useState('');
   const [reservationMenuVisible, setReservationMenuVisible] = useState(false);
-  const [methodMenuVisible, setMethodMenuVisible] = useState(false); // Controla la visibilidad del menú de método de pago
-  const [paymentMethodType, setPaymentMethodType] = useState(''); // Almacena el método de pago seleccionado
-
-
+  const [methodMenuVisible, setMethodMenuVisible] = useState(false);
+  const [paymentMethodType, setPaymentMethodType] = useState('');
 
   const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L'];
   const paymentMethodValues: { [key: string]: string } = {
@@ -95,9 +95,8 @@ const AddReservationFormScreen = () => {
     }
   };
 
-
   const handleSubmit = async () => {
-    if (!guestName || !phone || !company || !amount || !paymentMethod || !paymentMethodType) {
+    if (!guestName || !phone || !amount || !paymentMethod || !paymentMethodType) {
       Alert.alert("Error", "Por favor completa todos los campos antes de guardar.");
       return;
     }
@@ -120,7 +119,8 @@ const AddReservationFormScreen = () => {
         paymentMethod: paymentMethodValues[paymentMethod],
         paymentMethodType: paymentMethodType, // ✅ Valor directo del estado
         advancePayment,
-        status 
+        status,
+        peoples: peoples ? parseInt(peoples) : 1,
       });
 
       setDialogSuccess(true);
@@ -134,10 +134,17 @@ const AddReservationFormScreen = () => {
     }
   };
 
-
-
   return (
     <Provider>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.flex}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // Ajustar según necesidad
+      >
+       <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
       <View style={styles.container}>
         {currentStep === 1 && (
           <>
@@ -349,8 +356,6 @@ const AddReservationFormScreen = () => {
                     left={<TextInput.Icon icon="cash-register" />}
                   />
                 )}
-
-                {/* Resto del formulario... */}
               </>
             )}
 
@@ -395,6 +400,23 @@ const AddReservationFormScreen = () => {
               left={<TextInput.Icon icon="domain" />}
             />
 
+            <TextInput
+              label="Huéspedes"
+              value={peoples}
+              onChangeText={(text) => {
+                // Validación opcional: solo números
+                const numericValue = text.replace(/[^0-9]/g, '');
+                setPeoples(numericValue);
+                handleInputChange();
+              }}
+              mode="outlined"
+              placeholder="Ejemplo: 2 adultos"
+              keyboardType="numeric"
+              style={styles.input}
+              left={<TextInput.Icon icon="account-group" />} // Icono de personas
+              right={<TextInput.Affix text="personas" />} // Sufijo opcional
+            />
+
             {/* Botones de Volver y Guardar */}
             <View style={styles.buttonContainer}>
               <Button
@@ -409,7 +431,7 @@ const AddReservationFormScreen = () => {
                 onPress={handleSubmit}
                 style={styles.buttonSave}
                 disabled={
-                  !guestName || !phone || !company || !amount || !paymentMethod || !paymentMethodType
+                  !guestName || !phone || !amount || !paymentMethod || !paymentMethodType
                 }
               >
                 Guardar
@@ -418,6 +440,9 @@ const AddReservationFormScreen = () => {
           </>
         )}
       </View>
+
+      </ScrollView>
+      </KeyboardAvoidingView>
       {/* Modal de Carga y Resultado */}
       <Portal>
         <Dialog visible={dialogVisible} dismissable={false}>
@@ -461,6 +486,13 @@ const AddReservationFormScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingBottom: 1,
+  },
   container: {
     flex: 1,
     padding: 20,

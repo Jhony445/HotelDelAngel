@@ -13,6 +13,7 @@ export const agregarReserva = async (reservaData: {
   paymentMethodType: string;
   advancePayment: string;
   status: string;
+  peoples: number;
 }) => {
   try {
     const docRef = await addDoc(collection(db, "reservaciones"), {
