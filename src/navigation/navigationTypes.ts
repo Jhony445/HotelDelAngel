@@ -8,4 +8,5 @@ export type TabParamList = {
   Home: undefined;
   Settings: undefined;
   Store: undefined;
+  Calendar: undefined;
 };

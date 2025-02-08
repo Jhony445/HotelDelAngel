@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/navigationTypes';
-import ScreenTitle from '../components/ScreenTitle';
-import SubTitle from '../components/SubTitle';
-import FloatingButton from '../components/FloatingButton';
-import FilterBar from '../components/FilterBar';
-import ReservationListItem from '../components/ReservationListItem';
+import ScreenTitle from '../components/ComponentsReservation/ScreenTitle';
+import SubTitle from '../components/ComponentsReservation/SubTitle';
+import FloatingButton from '../components/ComponentsReservation/FloatingButton';
+import FilterBar from '../components/ComponentsReservation/FilterBar';
+import ReservationListItem from '../components/ComponentsReservation/ReservationListItem';
 import { obtenerReservaciones } from '../services/firebase/firestoreQueries';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -58,9 +58,28 @@ const HomeScreen = () => {
     navigation.navigate('AddReservationForm');
   };
 
+  // Filtro por nombre (o cualquier otro filtro que ya tengas)
   const filteredReservations = reservations.filter(reservation =>
     reservation.guestName.toLowerCase().includes(filter.toLowerCase())
   );
+
+  // --- Nuevo filtrado para mostrar reservaciones del mes actual y el mes siguiente ---
+  // Calculamos el inicio del mes actual y el final del mes siguiente.
+  const today = new Date();
+  const startCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0, 23, 59, 59, 999);
+
+  // Filtramos utilizando "rawDate" para obtener la fecha original en timestamp
+  const reservationsWithinRange = filteredReservations.filter(reservation => {
+    let resDate: Date;
+    if (reservation.rawDate && typeof reservation.rawDate.toDate === 'function') {
+      resDate = reservation.rawDate.toDate();
+    } else {
+      resDate = new Date(reservation.rawDate);
+    }
+    return resDate >= startCurrentMonth && resDate <= endNextMonth;
+  });
+  // ---------------------------------------------------------------------------------
 
   if (loading) {
     return (
@@ -91,12 +110,12 @@ const HomeScreen = () => {
             <SubTitle text="Reservaciones próximas" />
           </View>
           <FlatList
-            data={filteredReservations}
+            data={reservationsWithinRange}  // Usamos el array filtrado
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <ReservationListItem
                 guestName={item.guestName || ''}
-                date={item.date}
+                date={item.date || 'Sin fecha'} // "date" ya viene formateado para la card
                 room={item.room || ''}
                 paymentMethod={item.paymentMethod || 'No especificado'}
                 amount={item.amount || '0'}
@@ -108,6 +127,7 @@ const HomeScreen = () => {
                     reservation: {
                       id: item.id,
                       ...item,
+                      // En detalles, se envía la fecha original en timestamp para formateo posterior
                       date: item.rawDate?.toMillis(),
                       createdAt: item.createdAt?.toMillis()
                     }

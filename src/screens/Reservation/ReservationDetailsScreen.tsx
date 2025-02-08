@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/navigationTypes';
+import { RootStackParamList } from '../../navigation/navigationTypes';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Button, ActivityIndicator } from 'react-native-paper';
-import { actualizarReservaCompleta } from '../services/firebase/UpdateReservation';
+import { actualizarReservaCompleta } from '../../services/firebase/UpdateReservation';
 type DetailsRouteProp = RouteProp<RootStackParamList, 'ReservationDetails'>;
 
 const formatDate = (timestamp: number) => {

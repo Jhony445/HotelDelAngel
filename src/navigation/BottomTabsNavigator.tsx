@@ -6,11 +6,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import StoreScreen from '../screens/StoreScreen';
-import AddReservationFormScreen from '../screens/AddReservationFormScreen';
-import ReservationDetailsScreen from '../screens/ReservationDetailsScreen';
+import AddReservationFormScreen from '../screens/Reservation/AddReservationFormScreen';
+import ReservationDetailsScreen from '../screens/Reservation/ReservationDetailsScreen';
+import CalendarScreen from '../screens/CalendarScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
 import { Keyboard, View, Platform } from 'react-native';
-import OptionsMenu from '../components/OptionsMenu';
+import OptionsMenu from '../components/ComponentsReservation/OptionsMenu';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -35,6 +36,8 @@ const TabNavigator = () => {
 
           if (route.name === 'Home') {
             iconName = 'home';
+          } else if (route.name === 'Calendar') {
+            iconName = 'calendar';
           } else if (route.name === 'Store') {
             iconName = 'storefront';
           } else if (route.name === 'Settings') {
@@ -49,6 +52,7 @@ const TabNavigator = () => {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Inicio' }} />
+      <Tab.Screen name="Calendar" component={CalendarScreen} options={{ tabBarLabel: 'Agenda' }} />
       <Tab.Screen name="Store" component={StoreScreen} options={{ tabBarLabel: 'Tienda' }} />
       <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: 'Configuración' }} />
     </Tab.Navigator>

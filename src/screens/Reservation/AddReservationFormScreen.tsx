@@ -3,9 +3,9 @@ import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard, Activity
 import { useNavigation } from '@react-navigation/native';
 import { TextInput, Button, Menu, Provider, Dialog, Portal, Text } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { agregarReserva } from '../services/firebase/AddReservation';
+import { agregarReserva } from '../../services/firebase/AddReservation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { checkRoomAvailability } from '../services/firebase/checkAvailability';
+import { checkRoomAvailability } from '../../services/firebase/checkAvailability';
 import { KeyboardAvoidingView, ScrollView } from 'react-native';
 
 const AddReservationFormScreen = () => {
@@ -33,7 +33,7 @@ const AddReservationFormScreen = () => {
   const [methodMenuVisible, setMethodMenuVisible] = useState(false);
   const [paymentMethodType, setPaymentMethodType] = useState('');
 
-  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L'];
+  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L', '1-Posada', '2-Posada', '3-Posada'];
   const paymentMethodValues: { [key: string]: string } = {
     "Reservación pagada": "Pago completo",
     "Reservación (50%)": "Pago parcial",
