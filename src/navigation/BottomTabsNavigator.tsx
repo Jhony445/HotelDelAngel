@@ -10,6 +10,7 @@ import AddReservationFormScreen from '../screens/AddReservationFormScreen';
 import ReservationDetailsScreen from '../screens/ReservationDetailsScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
 import { Keyboard, View, Platform } from 'react-native';
+import OptionsMenu from '../components/OptionsMenu';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -44,7 +45,7 @@ const TabNavigator = () => {
         },
         tabBarActiveTintColor: 'blue',
         tabBarInactiveTintColor: 'gray',
-        tabBarHideOnKeyboard: true, // 🔥 Oculta la barra cuando el teclado aparece
+        tabBarHideOnKeyboard: true,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Inicio' }} />
@@ -71,12 +72,19 @@ const AppNavigator = () => (
       <Stack.Screen 
         name="ReservationDetails" 
         component={ReservationDetailsScreen}
-        options={{ 
+        options={({ route, navigation }) => ({
           title: 'Detalles',
           headerStyle: { backgroundColor: '#007bff' },
           headerTintColor: '#ffffff',
-          headerTitleStyle: { fontWeight: 'bold' }
-        }}
+          headerTitleStyle: { fontWeight: 'bold' },
+          headerRight: () => (
+            <OptionsMenu
+              reservaId={route.params.reservation.id} 
+              onUpdate={() => console.log('Actualizar')} 
+              onDelete={() => console.log('Eliminar')} 
+            />
+          ),
+        })}
       />
     </Stack.Navigator>
   </NavigationContainer>

@@ -1,8 +1,13 @@
 import React from 'react';
 import BottomTabsNavigator from './src/navigation/BottomTabsNavigator';
+import { PaperProvider } from 'react-native-paper';
 
 const App = () => {
-  return <BottomTabsNavigator />;
+  return (
+    <PaperProvider>
+      <BottomTabsNavigator />
+    </PaperProvider>
+  );
 };
 
 export default App;

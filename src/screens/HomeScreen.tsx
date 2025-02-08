@@ -106,8 +106,9 @@ const HomeScreen = () => {
                 onPress={() =>
                   navigation.navigate('ReservationDetails', {
                     reservation: {
+                      id: item.id,
                       ...item,
-                      date: item.rawDate?.toMillis(), // Usar timestamp original
+                      date: item.rawDate?.toMillis(),
                       createdAt: item.createdAt?.toMillis()
                     }
                   })

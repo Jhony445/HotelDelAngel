@@ -1,4 +1,3 @@
-// src/screens/ReservationDetailsScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
@@ -6,7 +5,6 @@ import { RootStackParamList } from '../navigation/navigationTypes';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Button, ActivityIndicator } from 'react-native-paper';
 import { actualizarReservaCompleta } from '../services/firebase/UpdateReservation';
-
 type DetailsRouteProp = RouteProp<RootStackParamList, 'ReservationDetails'>;
 
 const formatDate = (timestamp: number) => {
@@ -39,8 +37,6 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
     setLoading(true);
     try {
       await actualizarReservaCompleta(reservation.id);
-  
-      // 🔹 Actualizar la vista con los nuevos datos
       reservation.paymentMethod = 'Pago completo';
       reservation.status = 'Pagado';
   

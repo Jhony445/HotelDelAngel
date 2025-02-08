@@ -57,11 +57,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ onFilterChange }) => {
         )}
       </View>
 
-      <Animated.View style={[styles.filterButton, { backgroundColor: buttonBackground }]}>
+      {/* <Animated.View style={[styles.filterButton, { backgroundColor: buttonBackground }]}>
         <TouchableOpacity disabled={!filterText}>
           <Text style={styles.filterButtonText}>Filtrar</Text>
         </TouchableOpacity>
-      </Animated.View>
+      </Animated.View> */}
     </View>
   );
 };
