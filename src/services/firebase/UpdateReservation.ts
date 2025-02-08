@@ -25,3 +25,15 @@ export const actualizarReservaCompleta = async (reservaId: string) => {
     throw error;
   }
 };
+
+export const actualizarReserva = async (reservaId: string, updatedData: any) => {
+  try {
+    const reservaRef = doc(db, 'reservaciones', reservaId);
+    await updateDoc(reservaRef, updatedData);
+    console.log('Reservación actualizada correctamente.');
+    return true;
+  } catch (error) {
+    console.error('Error actualizando reservación:', error);
+    throw error;
+  }
+};

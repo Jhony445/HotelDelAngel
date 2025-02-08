@@ -1,3 +1,4 @@
+// AppNavigator.tsx
 import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,8 +10,9 @@ import StoreScreen from '../screens/StoreScreen';
 import AddReservationFormScreen from '../screens/Reservation/AddReservationFormScreen';
 import ReservationDetailsScreen from '../screens/Reservation/ReservationDetailsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
+import UpdateReservationScreen from '../screens/Reservation/UpdateReservationScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
-import { Keyboard, View, Platform } from 'react-native';
+import { Keyboard } from 'react-native';
 import OptionsMenu from '../components/ComponentsReservation/OptionsMenu';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -73,8 +75,8 @@ const AppNavigator = () => (
           headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
-      <Stack.Screen 
-        name="ReservationDetails" 
+      <Stack.Screen
+        name="ReservationDetails"
         component={ReservationDetailsScreen}
         options={({ route, navigation }) => ({
           title: 'Detalles',
@@ -83,12 +85,25 @@ const AppNavigator = () => (
           headerTitleStyle: { fontWeight: 'bold' },
           headerRight: () => (
             <OptionsMenu
-              reservaId={route.params.reservation.id} 
-              onUpdate={() => console.log('Actualizar')} 
-              onDelete={() => console.log('Eliminar')} 
+              reservaId={route.params.reservation.id}
+              onUpdate={() => {
+                // Navega a la pantalla de actualización, pasando la reserva completa
+                navigation.navigate('UpdateReservation', { reservation: route.params.reservation });
+              }}
+              onDelete={() => console.log('Eliminar')}
             />
           ),
         })}
+      />
+      <Stack.Screen
+        name="UpdateReservation"
+        component={UpdateReservationScreen}
+        options={{
+          title: 'Actualizar Reservación',
+          headerStyle: { backgroundColor: '#007bff' },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
       />
     </Stack.Navigator>
   </NavigationContainer>
