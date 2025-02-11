@@ -19,6 +19,7 @@
     "firebase": "^11.2.0",
     "react": "18.3.1",
     "react-native": "0.76.6",
+    "react-native-calendars": "^1.1308.1",
     "react-native-date-picker": "^5.0.8",
     "react-native-gesture-handler": "^2.22.0",
     "react-native-get-random-values": "^1.11.0",
@@ -32,6 +33,7 @@
     "@babel/core": "^7.25.2",
     "@types/react": "~18.3.12",
     "@types/react-native-vector-icons": "^6.4.18",
+    "@types/xdate": "^0.8.35",
     "typescript": "^5.3.3"
   },
   "private": true
