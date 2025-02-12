@@ -9,31 +9,64 @@ import {
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/navigationTypes";
 import ReservationListItem from "../components/ComponentsReservation/ReservationListItem";
-import { obtenerReservaciones } from "../services/firebase/firestoreQueries";
 import CalendarPicker from "../components/ComponentsReservation/CalendarPicker";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "../services/firebase/firebaseConfig";
 
 const CalendarScreen = () => {
   const [reservations, setReservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [calendarHeight, setCalendarHeight] = useState(360);
 
   useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const data = await obtenerReservaciones();
+    // Creamos la query para obtener las reservaciones ordenadas por fecha descendente
+    const q = query(
+      collection(db, "reservaciones"),
+      orderBy("date", "desc")
+    );
+    // onSnapshot se suscribe a los cambios en tiempo real
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          // Se formatea la fecha para la card (opcional)
+          date: doc.data().date.toDate().toLocaleDateString("es-MX", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          rawDate: doc.data().date,
+        }));
         setReservations(data);
-      } catch (err) {
+        setLoading(false);
+      },
+      (err) => {
         setError("Error al cargar las reservaciones");
         console.error(err);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchReservations();
+    return () => unsubscribe();
   }, []);
+
+  // Filtra las reservaciones según la fecha seleccionada.
+  // Se utiliza la misma lógica que en CalendarPicker para obtener la "clave" de fecha ("YYYY-MM-DD")
+  const filteredReservations = selectedDate
+    ? reservations.filter((reservation) => {
+        const dateObj = reservation.rawDate.toDate();
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const reservationDateKey = `${year}-${month}-${day}`;
+        return reservationDateKey === selectedDate;
+      })
+    : reservations;
 
   return (
     <View style={styles.container}>
@@ -44,6 +77,7 @@ const CalendarScreen = () => {
           <CalendarPicker
             onHeightChange={setCalendarHeight}
             reservations={reservations}
+            onDateSelected={(date) => setSelectedDate(date)}
           />
         </View>
       </View>
@@ -55,9 +89,9 @@ const CalendarScreen = () => {
           <ActivityIndicator size="large" color="#1E88E5" />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
-        ) : (
+        ) : filteredReservations.length > 0 ? (
           <FlatList
-            data={reservations}
+            data={filteredReservations}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <ReservationListItem
@@ -81,12 +115,9 @@ const CalendarScreen = () => {
                 }
               />
             )}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>
-                No hay reservas programadas
-              </Text>
-            }
           />
+        ) : (
+          <Text style={styles.emptyText}>Sin reservas</Text>
         )}
       </View>
     </View>
@@ -112,16 +143,9 @@ const styles = StyleSheet.create({
     color: "#1E88E5",
     marginBottom: 20,
     letterSpacing: 0.8,
-    textShadowColor: "rgba(25, 118, 210, 0.15)", // Sombra sutil en tono azul
+    textShadowColor: "rgba(25, 118, 210, 0.15)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#ffffff",
-    textAlign: "center",
-    marginTop: 5,
-    marginBottom: 10,
   },
   calendarContainer: {
     width: "100%",

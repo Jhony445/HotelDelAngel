@@ -10,11 +10,13 @@ const HEADER_HEIGHT = 80;
 interface CalendarPickerProps {
   onHeightChange?: (height: number) => void;
   reservations?: any[]; // Ajusta el tipo según tu modelo
+  onDateSelected?: (date: string) => void; // Callback para enviar la fecha seleccionada
 }
 
 const CalendarPicker: React.FC<CalendarPickerProps> = ({
   onHeightChange,
   reservations = [],
+  onDateSelected,
 }) => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [containerHeight, setContainerHeight] = useState(360);
@@ -34,7 +36,10 @@ const CalendarPicker: React.FC<CalendarPickerProps> = ({
   ];
 
   const onDayPress = (day: DateData) => {
+    // Se actualiza la fecha seleccionada (formato "YYYY-MM-DD")
     setSelectedDate(day.dateString);
+    // Se envía al componente padre la fecha seleccionada
+    onDateSelected && onDateSelected(day.dateString);
   };
 
   const getWeeksInMonth = (month: number, year: number) => {
@@ -52,7 +57,7 @@ const CalendarPicker: React.FC<CalendarPickerProps> = ({
     onHeightChange?.(calculatedHeight);
   };
 
-  // Genera marcas de reservaciones usando la fecha local y omitiendo la hora
+  // Genera marcas de reservaciones usando la fecha local (ignorando la hora)
   const reservationMarks: { [date: string]: any } = {};
   reservations.forEach((reservation) => {
     // Se asume que 'rawDate' es un timestamp de Firebase; se convierte a Date

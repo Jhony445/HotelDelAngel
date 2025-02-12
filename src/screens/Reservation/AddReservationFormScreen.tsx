@@ -401,10 +401,9 @@ const AddReservationFormScreen = () => {
             />
 
             <TextInput
-              label="Huéspedes"
+              label="Huéspedes (Opcional)"
               value={peoples}
               onChangeText={(text) => {
-                // Validación opcional: solo números
                 const numericValue = text.replace(/[^0-9]/g, '');
                 setPeoples(numericValue);
                 handleInputChange();

@@ -138,7 +138,6 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
               <Menu
                 visible={menuVisible}
                 onDismiss={() => setMenuVisible(false)}
-                // Usamos el propio disparador como anchor
                 anchor={
                   <TouchableOpacity
                     onPress={() => setMenuVisible(true)}
@@ -194,7 +193,7 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
             <Text style={styles.sectionTitle}>Datos del Huésped</Text>
 
             <TextInput
-              label="Nombre completo *"
+              label="Nombre completo"
               value={guestName}
               onChangeText={setGuestName}
               style={styles.input}
@@ -204,7 +203,7 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
             />
 
             <TextInput
-              label="Teléfono *"
+              label="Teléfono"
               value={phone}
               onChangeText={setPhone}
               style={styles.input}
@@ -215,7 +214,7 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
             />
 
             <TextInput
-              label="Número de huéspedes *"
+              label="Número de huéspedes"
               value={peoples}
               onChangeText={setPeoples}
               style={styles.input}
