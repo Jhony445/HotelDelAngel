@@ -1,6 +1,5 @@
 import { db } from './firebaseConfig';
 import { collection, query, getDocs, where, orderBy } from 'firebase/firestore';
-// firestoreQueries.ts (versión corregida)
 export const obtenerReservaciones = async () => {
     try {
         const q = query(

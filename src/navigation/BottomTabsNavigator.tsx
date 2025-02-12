@@ -1,4 +1,3 @@
-// AppNavigator.tsx
 import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -11,6 +10,8 @@ import AddReservationFormScreen from '../screens/Reservation/AddReservationFormS
 import ReservationDetailsScreen from '../screens/Reservation/ReservationDetailsScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import UpdateReservationScreen from '../screens/Reservation/UpdateReservationScreen';
+import AgendaSettingsScreen from '../screens/OptionsScreens/AgendaSettingsScreen';
+import StoreSettingsScreen from '../screens/OptionsScreens/StoreSettingsScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
 import { Keyboard } from 'react-native';
 import OptionsMenu from '../components/ComponentsReservation/OptionsMenu';
@@ -87,7 +88,6 @@ const AppNavigator = () => (
             <OptionsMenu
               reservaId={route.params.reservation.id}
               onUpdate={() => {
-                // Navega a la pantalla de actualización, pasando la reserva completa
                 navigation.navigate('UpdateReservation', { reservation: route.params.reservation });
               }}
               onDelete={() => console.log('Eliminar')}
@@ -100,6 +100,26 @@ const AppNavigator = () => (
         component={UpdateReservationScreen}
         options={{
           title: 'Actualizar Reservación',
+          headerStyle: { backgroundColor: '#007bff' },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+      <Stack.Screen
+        name="AgendaSettings"
+        component={AgendaSettingsScreen}
+        options={{
+          title: 'Configuración Agenda',
+          headerStyle: { backgroundColor: '#007bff' },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+      <Stack.Screen
+        name="StoreSettings"
+        component={StoreSettingsScreen}
+        options={{
+          title: 'Configuración Tienda',
           headerStyle: { backgroundColor: '#007bff' },
           headerTintColor: '#ffffff',
           headerTitleStyle: { fontWeight: 'bold' },

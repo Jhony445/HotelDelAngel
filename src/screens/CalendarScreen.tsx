@@ -22,19 +22,16 @@ const CalendarScreen = () => {
   const [calendarHeight, setCalendarHeight] = useState(360);
 
   useEffect(() => {
-    // Creamos la query para obtener las reservaciones ordenadas por fecha descendente
     const q = query(
       collection(db, "reservaciones"),
       orderBy("date", "desc")
     );
-    // onSnapshot se suscribe a los cambios en tiempo real
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          // Se formatea la fecha para la card (opcional)
           date: doc.data().date.toDate().toLocaleDateString("es-MX", {
             year: "numeric",
             month: "long",
@@ -54,9 +51,6 @@ const CalendarScreen = () => {
 
     return () => unsubscribe();
   }, []);
-
-  // Filtra las reservaciones según la fecha seleccionada.
-  // Se utiliza la misma lógica que en CalendarPicker para obtener la "clave" de fecha ("YYYY-MM-DD")
   const filteredReservations = selectedDate
     ? reservations.filter((reservation) => {
         const dateObj = reservation.rawDate.toDate();
@@ -72,7 +66,7 @@ const CalendarScreen = () => {
     <View style={styles.container}>
       {/* Parte superior */}
       <View style={styles.topSection}>
-        <Text style={styles.title}>Calendario de Reservas</Text>
+        <Text style={styles.title}>Agenda</Text>
         <View style={[styles.calendarContainer, { height: calendarHeight }]}>
           <CalendarPicker
             onHeightChange={setCalendarHeight}
