@@ -42,7 +42,7 @@ const SettingsScreen: React.FC = () => {
 
       {/* Opción adicional de ejemplo */}
       <View style={[styles.card, { marginTop: 16 }]}>
-        <TouchableOpacity style={styles.optionItem}>
+        <TouchableOpacity style={styles.optionItem} onPress={() => navigation.navigate('AlertsSettings')}>
           <Ionicons name="notifications" size={24} color="#1E88E5" />
           <View style={styles.optionText}>
             <Text style={styles.optionTitle}>Notificaciones</Text>

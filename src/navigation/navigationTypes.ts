@@ -5,6 +5,7 @@ export type RootStackParamList = {
   UpdateReservation: { reservation: any };
   AgendaSettings: undefined;
   StoreSettings: undefined;
+  AlertsSettings: undefined; 
 };
 
 export type TabParamList = {

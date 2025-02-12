@@ -2,23 +2,26 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmModal from '../../components/ComponentsSettings/ConfirmModal'; // Asumiendo que crearás este componente
+import { exportarDatos } from '../../services/options/exportData';
+import { realizarBackup } from '../../services/options/BackUpDataAgenda';
+import { eliminarTodasLasReservaciones } from '../../services/options/delete';
 
 const AgendaSettingsScreen: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleExportData = () => {
-    // Lógica para exportar datos
+    exportarDatos();
     Alert.alert('Éxito', 'Datos exportados correctamente');
   };
 
   const handleBackup = () => {
-    // Lógica para copia de seguridad
+    realizarBackup();
     Alert.alert('Copia de seguridad', 'Backup realizado con éxito');
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     setShowDeleteModal(false);
-    // Lógica para borrar datos
+    await eliminarTodasLasReservaciones();
     Alert.alert('Eliminados', 'Todos los datos han sido borrados');
   };
 
