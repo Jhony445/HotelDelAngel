@@ -5,7 +5,12 @@ export type RootStackParamList = {
   UpdateReservation: { reservation: any };
   AgendaSettings: undefined;
   StoreSettings: undefined;
-  AlertsSettings: undefined; 
+  AlertsSettings: undefined;
+
+  // Navegación de la tienda
+  AddEditProduct: { product?: { id: string; name: string; description:string; price: number; stock: number } };
+  ProductDetail: { productId: string };
+  SalesHistory: undefined;
 };
 
 export type TabParamList = {

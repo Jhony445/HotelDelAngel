@@ -20,6 +20,11 @@ import AlertsView from '../screens/OptionsScreens/AlertsView';
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
+//Parte de tienda
+import AddEditProductScreen from '../screens/Store/AddEditProductScreen';
+import ProductDetailScreen from '../screens/Store/ProductDetailScreen';
+import SalesHistoryScreen from '../screens/Store/SalesHistoryScreen';
+
 const TabNavigator = () => {
   useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => { });
@@ -136,6 +141,35 @@ const AppNavigator = () => (
           headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
+      <Stack.Screen
+        name="AddEditProduct"
+        component={AddEditProductScreen} // 👈 Asegúrate de incluir esta línea
+        options={{
+          title: "Producto",
+          headerStyle: { backgroundColor: "#4a9700" },
+          headerTintColor: "#ffffff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+      <Stack.Screen
+        name="ProductDetail"
+        component={ProductDetailScreen} // 👈 Asegúrate de incluir esta línea
+        options={{
+          title: "Detalle de Producto",
+          headerStyle: { backgroundColor: "#4a9700" },
+          headerTintColor: "#ffffff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+      <Stack.Screen
+        name="SalesHistory"
+        component={SalesHistoryScreen} // 👈 Asegúrate de incluir esta línea
+        options={{
+          title: "Historial de Ventas",
+          headerStyle: { backgroundColor: "#4a9700" },
+          headerTintColor: "#ffffff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }} />
     </Stack.Navigator>
   </NavigationContainer>
 );
