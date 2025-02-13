@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/navigationTypes";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -14,15 +14,53 @@ const AddEditProductScreen: React.FC<Props> = ({ route, navigation }) => {
     const [price, setPrice] = useState(product?.price.toString() || "");
     const [stock, setStock] = useState(product?.stock.toString() || "");
     const [inputFocus, setInputFocus] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
-    const handleSave = () => {
-        console.log("Producto guardado:", {
-            name,
-            description,
-            price: Number(price),
-            stock: Number(stock)
-        });
-        navigation.goBack();
+    const validateForm = () => {
+        if (!name.trim()) {
+            Alert.alert("Error", "El nombre del producto es requerido");
+            return false;
+        }
+        if (!price || isNaN(Number(price))) {
+            Alert.alert("Error", "Precio inválido");
+            return false;
+        }
+        if (!stock || isNaN(Number(stock))) {
+            Alert.alert("Error", "Stock inválido");
+            return false;
+        }
+        return true;
+    };
+
+    const handleSave = async () => {
+        if (!validateForm()) return;
+
+        try {
+            setLoading(true);
+            const productData = {
+                name: name.trim(),
+                description: description.trim(),
+                price: Number(price),
+                stock: Number(stock)
+            };
+
+            if (product) {
+                // Actualizar producto existente
+                await updateProduct(product.id, productData);
+                Alert.alert("Éxito", "Producto actualizado correctamente");
+            } else {
+                // Crear nuevo producto
+                await createProduct(productData);
+                Alert.alert("Éxito", "Producto creado correctamente");
+            }
+
+            navigation.goBack();
+        } catch (error) {
+            console.error("Error saving product:", error);
+            Alert.alert("Error", "Ocurrió un error al guardar el producto");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -109,12 +147,17 @@ const AddEditProductScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
 
             <TouchableOpacity
-                style={styles.saveButton}
+                style={[
+                    styles.saveButton,
+                    loading && styles.disabledButton
+                ]}
                 onPress={handleSave}
                 activeOpacity={0.8}
+                disabled={loading}
             >
                 <Text style={styles.saveButtonText}>
-                    <Ionicons name="save-outline" size={18} /> Guardar Producto
+                    <Ionicons name="save-outline" size={18} />
+                    {loading ? "Guardando..." : "Guardar Producto"}
                 </Text>
             </TouchableOpacity>
         </ScrollView>
@@ -140,6 +183,10 @@ const styles = StyleSheet.create({
         height: 100,
         textAlignVertical: 'top',
         paddingTop: 12,
+    },
+    disabledButton: {
+        backgroundColor: '#a5d6a7',
+        opacity: 0.7,
     },
     screenTitle: {
         fontSize: 24,

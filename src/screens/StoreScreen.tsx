@@ -1,27 +1,65 @@
-import React from "react";
-import { View, FlatList, StyleSheet, TouchableOpacity, Text } from "react-native";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { View, FlatList, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/navigationTypes";
 import ProductListItem from "../components/ComponentsStore/ProductListItem";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { getProducts, Product } from "../services/StoreServices/ProductService";
 
-// Colores principales
 const COLORS = {
-  primary: '#2e7d32',    // Verde principal
-  primaryLight: '#e8f5e9', // Verde claro de fondo
-  accent: '#00c853',     // Verde acento
-  textDark: '#1b5e20',   // Texto oscuro
-  textLight: '#ffffff',  // Texto claro
-  background: '#f5f5f5'  // Fondo general
+  primary: '#2e7d32',
+  primaryLight: '#e8f5e9',
+  accent: '#00c853',
+  textDark: '#1b5e20',
+  textLight: '#ffffff',
+  background: '#f5f5f5',
+  error: '#d32f2f',
 };
 
 const StoreScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const products = [
-    { id: "1", name: "Refresco", price: 15, stock: 10, image: 'https://via.placeholder.com/100' },
-    { id: "2", name: "Agua Mineral", price: 10, stock: 20, image: 'https://via.placeholder.com/100' },
-  ];
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const productsData = await getProducts();
+      setProducts(productsData);
+      setError(null);
+    } catch (err) {
+      setError("Error al cargar los productos");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity onPress={fetchProducts} style={styles.retryButton}>
+          <Text style={styles.retryText}>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -35,23 +73,28 @@ const StoreScreen: React.FC = () => {
           />
         )}
         contentContainerStyle={styles.listContent}
-        ListHeaderComponent={<Text style={styles.sectionTitle}>Productos en Inventario</Text>}
+        ListHeaderComponent={<Text style={styles.sectionTitle}>Productos en Inventario</Text>} // Agregado
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="alert-circle" size={48} color={COLORS.primary} />
+            <Text style={styles.emptyText}>No hay productos registrados</Text>
+          </View>
+        }
       />
 
       <View style={styles.fabContainer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.fabButton}
           onPress={() => navigation.navigate("AddEditProduct", { product: undefined })}
         >
           <Ionicons name="add" size={28} color={COLORS.textLight} />
         </TouchableOpacity>
-        
         <TouchableOpacity 
-          style={[styles.fabButton, styles.salesButton]}
-          onPress={() => navigation.navigate("SalesHistory")}
-        >
-          <Ionicons name="receipt" size={24} color={COLORS.textLight} />
-        </TouchableOpacity>
+        style={[styles.fabButton, styles.salesButton]}
+        onPress={() => navigation.navigate("SalesHistory")}
+      >
+        <Ionicons name="receipt" size={24} color={COLORS.textLight} />
+      </TouchableOpacity>
       </View>
     </View>
   );
@@ -63,9 +106,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     paddingHorizontal: 12,
   },
-  listContent: {
-    paddingBottom: 80,
-  },
   sectionTitle: {
     fontSize: 22,
     fontWeight: '800',
@@ -74,6 +114,48 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     width: '100%',
+  },
+  listContent: {
+    paddingBottom: 80,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    padding: 10,
+    borderRadius: 5,
+  },
+  retryText: {
+    color: COLORS.textLight,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  salesButton: {
+    backgroundColor: COLORS.accent,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.primary,
+    marginTop: 16,
+    textAlign: 'center',
   },
   fabContainer: {
     position: 'absolute',
@@ -94,9 +176,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  salesButton: {
-    backgroundColor: COLORS.accent,
-  }
 });
 
 export default StoreScreen;

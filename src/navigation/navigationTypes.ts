@@ -8,7 +8,15 @@ export type RootStackParamList = {
   AlertsSettings: undefined;
 
   // Navegación de la tienda
-  AddEditProduct: { product?: { id: string; name: string; description:string; price: number; stock: number } };
+  AddEditProduct: { 
+    product?: { 
+      id: string; 
+      name: string; 
+      description?: string;  // Hacer opcional
+      price: number; 
+      stock: number; 
+    } 
+  };
   ProductDetail: { productId: string };
   SalesHistory: undefined;
 };

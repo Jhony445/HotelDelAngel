@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput , Alert} from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { Product } from "../../services/StoreServices/ProductService";
 
 const COLORS = {
   primary: '#2e7d32',
@@ -11,10 +12,18 @@ const COLORS = {
   accent: '#c8e6c9'
 };
 
-const SaleModal: React.FC<{ visible: boolean; onClose: () => void; product: any }> = ({ 
+type SaleModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  product: Product;
+  onSaleSuccess: (quantitySold: number) => void;
+};
+
+const SaleModal: React.FC<SaleModalProps> = ({ 
   visible, 
   onClose, 
-  product 
+  product,
+  onSaleSuccess
 }) => {
   const [quantity, setQuantity] = useState("1");
 
@@ -32,6 +41,16 @@ const SaleModal: React.FC<{ visible: boolean; onClose: () => void; product: any 
     const current = parseInt(quantity) || 0;
     const newValue = operation === 'add' ? current + 1 : Math.max(0, current - 1);
     setQuantity(newValue.toString());
+  };
+
+  const handleConfirmSale = () => {
+    const quantityNumber = Number(quantity);
+    if (quantityNumber > 0 && quantityNumber <= product.stock) {
+      onSaleSuccess(quantityNumber);
+      onClose();
+    } else {
+      Alert.alert("Error", "Cantidad inválida o excede el stock disponible");
+    }
   };
 
   return (
@@ -83,14 +102,7 @@ const SaleModal: React.FC<{ visible: boolean; onClose: () => void; product: any 
 
           <TouchableOpacity 
             style={styles.confirmButton}
-            onPress={() => {
-              console.log("Venta registrada:", { 
-                product: product.name, 
-                quantity, 
-                total: calculateTotal() 
-              });
-              onClose();
-            }}
+            onPress={handleConfirmSale}
           >
             <Text style={styles.confirmButtonText}>Confirmar Venta</Text>
           </TouchableOpacity>
@@ -99,6 +111,7 @@ const SaleModal: React.FC<{ visible: boolean; onClose: () => void; product: any 
     </Modal>
   );
 };
+
 
 const styles = StyleSheet.create({
   overlay: {
