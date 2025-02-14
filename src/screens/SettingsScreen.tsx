@@ -39,23 +39,6 @@ const SettingsScreen: React.FC = () => {
           <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
         </TouchableOpacity>
       </View>
-
-      {/* Opción adicional de ejemplo */}
-      <View style={[styles.card, { marginTop: 16 }]}>
-        <TouchableOpacity style={styles.optionItem} onPress={() => navigation.navigate('AlertsSettings')}>
-          <Ionicons name="notifications" size={24} color="#1E88E5" />
-          <View style={styles.optionText}>
-            <Text style={styles.optionTitle}>Notificaciones</Text>
-            <Text style={styles.optionSubtitle}>Personaliza alertas</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Botón de Cerrar Sesión */}
-      <TouchableOpacity style={styles.logoutButton}>
-        <Text style={styles.logoutText}>Cerrar Sesión</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };

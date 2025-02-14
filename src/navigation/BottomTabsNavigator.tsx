@@ -15,7 +15,6 @@ import StoreSettingsScreen from '../screens/OptionsScreens/StoreSettingsScreen';
 import { RootStackParamList, TabParamList } from './navigationTypes';
 import { Keyboard } from 'react-native';
 import OptionsMenu from '../components/ComponentsReservation/OptionsMenu';
-import AlertsView from '../screens/OptionsScreens/AlertsView';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -126,16 +125,6 @@ const AppNavigator = () => (
         component={StoreSettingsScreen}
         options={{
           title: 'Configuración Tienda',
-          headerStyle: { backgroundColor: '#007bff' },
-          headerTintColor: '#ffffff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        }}
-      />
-      <Stack.Screen
-        name="AlertsSettings"
-        component={AlertsView}
-        options={{
-          title: 'Configuración de Alertas',
           headerStyle: { backgroundColor: '#007bff' },
           headerTintColor: '#ffffff',
           headerTitleStyle: { fontWeight: 'bold' },
