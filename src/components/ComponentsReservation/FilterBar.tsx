@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Platform } from 'react-native';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface FilterBarProps {

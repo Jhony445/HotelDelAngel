@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   menu: {
     marginTop: 8,
-    marginLeft: 12, // separa el menú del margen izquierdo
+    marginLeft: 12,
     width: '70%',
     borderRadius: 8,
     elevation: 10,

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmModal from '../../components/ComponentsSettings/ConfirmModal';
-import { exportInventoryData, backupInventoryData, deleteAllStoreData } from "../../services/StoreServices/optionsStore";
+import { exportInventoryData, backupInventoryData, deleteAllStoreData, exportSalesData } from "../../services/StoreServices/optionsStore";
 
 const StoreSettingsScreen: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -14,6 +14,9 @@ const StoreSettingsScreen: React.FC = () => {
   const handleInventoryBackup = async () => {
     Alert.alert('Backup', 'Inventario respaldado con éxito');
     await backupInventoryData();
+  };
+  const handleExportSalesData = async () => {
+    await exportSalesData();
   };
   const confirmDeleteStoreData = async () => {
     setShowDeleteModal(false);
@@ -45,6 +48,15 @@ const StoreSettingsScreen: React.FC = () => {
           <View style={styles.textContainer}>
             <Text style={styles.optionTitle}>Respaldo de Inventario</Text>
             <Text style={styles.optionSubtitle}>Guardar copia en la nube</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
+        </TouchableOpacity>
+        <View style={styles.divider} />
+        <TouchableOpacity style={styles.optionItem} onPress={handleExportSalesData}>
+          <Ionicons name="stats-chart-outline" size={24} color="#1E88E5" />
+          <View style={styles.textContainer}>
+            <Text style={styles.optionTitle}>Exportar Ventas</Text>
+            <Text style={styles.optionSubtitle}>Generar reporte en formato CSV</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
         </TouchableOpacity>
@@ -82,7 +94,6 @@ const StoreSettingsScreen: React.FC = () => {
   );
 };
 
-// Reutilizamos los mismos estilos de AgendaSettingsScreen
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

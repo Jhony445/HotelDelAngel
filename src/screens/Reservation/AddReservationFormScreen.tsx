@@ -106,7 +106,6 @@ const AddReservationFormScreen = () => {
     setDialogMessage("Guardando reserva...");
 
     try {
-      // Calcular el estado automáticamente
       const status = paymentMethod === "Reservación (50%)" ? "Reservado" : "Pagado";
 
       await agregarReserva({
@@ -139,7 +138,7 @@ const AddReservationFormScreen = () => {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // Ajustar según necesidad
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
       >
        <ScrollView
         contentContainerStyle={styles.scrollContainer}

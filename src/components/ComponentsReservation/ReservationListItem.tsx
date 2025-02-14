@@ -92,10 +92,10 @@ const ReservationListItem: React.FC<ReservationListItemProps> = ({
             color="#666"
           />
           <Text style={styles.paymentMethodText}>
-            {paymentMethod || 'Método no especificado'} {/* Mostrar el tipo de operación */}
+            {paymentMethod || 'Método no especificado'}
           </Text>
           <Text style={styles.paymentMethodText}>
-            ({paymentMethodType || 'Tipo no especificado'}) {/* Mostrar método de pago entre paréntesis */}
+            ({paymentMethodType || 'Tipo no especificado'})
           </Text>
         </View>
       </View>

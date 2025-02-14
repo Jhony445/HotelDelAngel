@@ -132,7 +132,7 @@ const AppNavigator = () => (
       />
       <Stack.Screen
         name="AddEditProduct"
-        component={AddEditProductScreen} // 👈 Asegúrate de incluir esta línea
+        component={AddEditProductScreen}
         options={{
           title: "Producto",
           headerStyle: { backgroundColor: "#4a9700" },
@@ -142,7 +142,7 @@ const AppNavigator = () => (
       />
       <Stack.Screen
         name="ProductDetail"
-        component={ProductDetailScreen} // 👈 Asegúrate de incluir esta línea
+        component={ProductDetailScreen}
         options={{
           title: "Detalle de Producto",
           headerStyle: { backgroundColor: "#4a9700" },
@@ -152,7 +152,7 @@ const AppNavigator = () => (
       />
       <Stack.Screen
         name="SalesHistory"
-        component={SalesHistoryScreen} // 👈 Asegúrate de incluir esta línea
+        component={SalesHistoryScreen}
         options={{
           title: "Historial de Ventas",
           headerStyle: { backgroundColor: "#4a9700" },

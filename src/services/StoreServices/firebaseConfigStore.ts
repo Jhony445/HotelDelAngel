@@ -13,8 +13,7 @@ const firebaseConfigStore = {
 
 const app = initializeApp(firebaseConfigStore);
 
-// Servicios de Firebase
-export const db = getFirestore(app); // Firestore
-export const storage = getStorage(app); // Almacenamiento
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export default app;

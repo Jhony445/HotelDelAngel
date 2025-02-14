@@ -48,7 +48,6 @@ const SaleModal: React.FC<SaleModalProps> = ({
     
     if (quantityNumber > 0 && quantityNumber <= product.stock) {
       try {
-        // Registrar la venta
         await createSale({
           productId: product.id,
           productName: product.name,

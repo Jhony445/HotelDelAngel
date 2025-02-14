@@ -45,11 +45,9 @@ const AddEditProductScreen: React.FC<Props> = ({ route, navigation }) => {
             };
 
             if (product) {
-                // Actualizar producto existente
                 await updateProduct(product.id, productData);
                 Alert.alert("Éxito", "Producto actualizado correctamente");
             } else {
-                // Crear nuevo producto
                 await createProduct(productData);
                 Alert.alert("Éxito", "Producto creado correctamente");
             }

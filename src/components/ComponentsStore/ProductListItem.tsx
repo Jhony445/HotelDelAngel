@@ -1,14 +1,13 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-// Paleta de colores
 const COLORS = {
-  primary: '#2e7d32',    // Verde principal
-  secondary: '#388e3c',  // Verde secundario
-  background: '#f5f5f5', // Fondo
-  textDark: '#1b5e20',   // Texto oscuro
-  textLight: '#ffffff',   // Texto claro
-  accent: '#c8e6c9'      // Acento claro
+  primary: '#2e7d32',
+  secondary: '#388e3c',
+  background: '#f5f5f5',
+  textDark: '#1b5e20',
+  textLight: '#ffffff',
+  accent: '#c8e6c9'
 };
 
 interface ProductListItemProps {

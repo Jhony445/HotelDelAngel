@@ -7,12 +7,11 @@ export type RootStackParamList = {
   StoreSettings: undefined;
   AlertsSettings: undefined;
 
-  // Navegación de la tienda
   AddEditProduct: { 
     product?: { 
       id: string; 
       name: string; 
-      description?: string;  // Hacer opcional
+      description?: string;
       price: number; 
       stock: number; 
     } 

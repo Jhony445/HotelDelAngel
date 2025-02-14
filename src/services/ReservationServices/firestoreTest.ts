@@ -1,8 +1,6 @@
-// src/services/firebase/firestoreTest.ts
 import { db } from "./firebaseConfig";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 
-// Función para agregar datos de prueba
 export const agregarDocumentoPrueba = async () => {
   try {
     const docRef = await addDoc(collection(db, "pruebas"), {
@@ -16,7 +14,6 @@ export const agregarDocumentoPrueba = async () => {
   }
 };
 
-// Función para leer datos de Firestore
 export const obtenerDocumentosPrueba = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "pruebas"));

@@ -58,18 +58,14 @@ const HomeScreen = () => {
     navigation.navigate('AddReservationForm');
   };
 
-  // Filtro por nombre (o cualquier otro filtro que ya tengas)
   const filteredReservations = reservations.filter(reservation =>
     reservation.guestName.toLowerCase().includes(filter.toLowerCase())
   );
 
-  // --- Nuevo filtrado para mostrar reservaciones del mes actual y el mes siguiente ---
-  // Calculamos el inicio del mes actual y el final del mes siguiente.
   const today = new Date();
   const startCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
   const endNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0, 23, 59, 59, 999);
 
-  // Filtramos utilizando "rawDate" para obtener la fecha original en timestamp
   const reservationsWithinRange = filteredReservations.filter(reservation => {
     let resDate: Date;
     if (reservation.rawDate && typeof reservation.rawDate.toDate === 'function') {
@@ -127,7 +123,6 @@ const HomeScreen = () => {
                     reservation: {
                       id: item.id,
                       ...item,
-                      // En detalles, se envía la fecha original en timestamp para formateo posterior
                       date: item.rawDate?.toMillis(),
                       createdAt: item.createdAt?.toMillis()
                     }
