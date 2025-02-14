@@ -20,8 +20,8 @@ import {
 import { useNavigation, RouteProp } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { RootStackParamList } from "../../navigation/navigationTypes";
-import { checkRoomAvailability , checkRoomAvailabilityForUpdate } from "../../services/firebase/checkAvailability";
-import { actualizarReserva } from "../../services/firebase/UpdateReservation";
+import { checkRoomAvailability , checkRoomAvailabilityForUpdate } from "../../services/ReservationServices/checkAvailability";
+import { actualizarReserva } from "../../services/ReservationServices/UpdateReservation";
 
 type UpdateReservationRouteProp = RouteProp<
   RootStackParamList,

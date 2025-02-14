@@ -4,7 +4,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/navigationTypes';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Button, ActivityIndicator } from 'react-native-paper';
-import { actualizarReservaCompleta } from '../../services/firebase/UpdateReservation';
+import { actualizarReservaCompleta } from '../../services/ReservationServices/UpdateReservation';
 type DetailsRouteProp = RouteProp<RootStackParamList, 'ReservationDetails'>;
 
 const formatDate = (timestamp: number) => {

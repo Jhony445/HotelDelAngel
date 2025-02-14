@@ -15,7 +15,7 @@ import SubTitle from '../components/ComponentsReservation/SubTitle';
 import FloatingButton from '../components/ComponentsReservation/FloatingButton';
 import FilterBar from '../components/ComponentsReservation/FilterBar';
 import ReservationListItem from '../components/ComponentsReservation/ReservationListItem';
-import { obtenerReservaciones } from '../services/firebase/firestoreQueries';
+import { obtenerReservaciones } from '../services/ReservationServices/firestoreQueries';
 import { useFocusEffect } from '@react-navigation/native';
 
 const HomeScreen = () => {

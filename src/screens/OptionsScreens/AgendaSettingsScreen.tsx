@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmModal from '../../components/ComponentsSettings/ConfirmModal'; // Asumiendo que crearás este componente
-import { exportarDatos } from '../../services/options/exportData';
-import { realizarBackup } from '../../services/options/BackUpDataAgenda';
-import { eliminarTodasLasReservaciones } from '../../services/options/delete';
+import { exportarDatos } from '../../services/ReservationServices/options/exportData';
+import { realizarBackup } from '../../services/ReservationServices/options/BackUpDataAgenda';
+import { eliminarTodasLasReservaciones } from '../../services/ReservationServices/options/delete';
 
 const AgendaSettingsScreen: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);

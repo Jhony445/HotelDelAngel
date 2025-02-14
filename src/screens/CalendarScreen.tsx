@@ -11,7 +11,7 @@ import { RootStackParamList } from "../navigation/navigationTypes";
 import ReservationListItem from "../components/ComponentsReservation/ReservationListItem";
 import CalendarPicker from "../components/ComponentsReservation/CalendarPicker";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from "../services/firebase/firebaseConfig";
+import { db } from "../services/ReservationServices/firebaseConfig";
 
 const CalendarScreen = () => {
   const [reservations, setReservations] = useState<any[]>([]);

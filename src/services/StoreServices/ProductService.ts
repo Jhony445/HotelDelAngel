@@ -117,6 +117,31 @@ export const getProductById = async (productId: string): Promise<Product | null>
     }
 };
 
+export const getAllProducts = async (): Promise<Product[]> => {
+    try {
+        const q = query(
+            collection(db, PRODUCTS_COLLECTION),
+            orderBy('createdAt', 'desc')
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            description: doc.data().description,
+            price: doc.data().price,
+            stock: doc.data().stock,
+            createdAt: doc.data().createdAt?.toDate(),
+            updatedAt: doc.data().updatedAt?.toDate(),
+            status: doc.data().status
+        } as Product));
+    } catch (error) {
+        console.error("Error getting all products: ", error);
+        throw error;
+    }
+};
+
 //Metodos de ventas
 export const createSale = async (saleData: Omit<Sale, 'id' | 'date'>) => {
     try {

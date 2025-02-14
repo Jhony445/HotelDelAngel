@@ -11,7 +11,7 @@ import {
 import { Menu, Divider } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-import { eliminarReserva } from "../../services/firebase/deleteReservation"; // Función de eliminación
+import { eliminarReserva } from "../../services/ReservationServices/deleteReservation"; // Función de eliminación
 
 interface OptionsMenuProps {
   reservaId: string;

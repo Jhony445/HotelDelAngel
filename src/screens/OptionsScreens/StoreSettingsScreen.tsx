@@ -2,21 +2,27 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmModal from '../../components/ComponentsSettings/ConfirmModal';
+import { exportInventoryData, backupInventoryData, deleteAllStoreData } from "../../services/StoreServices/optionsStore";
 
 const StoreSettingsScreen: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const handleExportStoreData = () => {
+  const handleExportStoreData = async () => {
     Alert.alert('Éxito', 'Datos de la tienda exportados correctamente');
+    await exportInventoryData();
   };
-
-  const handleInventoryBackup = () => {
+  const handleInventoryBackup = async () => {
     Alert.alert('Backup', 'Inventario respaldado con éxito');
+    await backupInventoryData();
   };
-
-  const confirmDeleteStoreData = () => {
+  const confirmDeleteStoreData = async () => {
     setShowDeleteModal(false);
-    Alert.alert('Eliminados', 'Todos los datos de la tienda han sido borrados');
+    try {
+      await deleteAllStoreData();
+      Alert.alert("Éxito", "Todos los datos fueron eliminados");
+    } catch (error) {
+      Alert.alert("Error", "No se pudieron eliminar los datos");
+    }
   };
 
   return (
@@ -44,24 +50,12 @@ const StoreSettingsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Configuración Avanzada */}
-      <View style={styles.card}>
-        <TouchableOpacity style={styles.optionItem}>
-          <Ionicons name="notifications-outline" size={24} color="#1E88E5" />
-          <View style={styles.textContainer}>
-            <Text style={styles.optionTitle}>Alertas de Stock</Text>
-            <Text style={styles.optionSubtitle}>Configurar niveles mínimos</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
-        </TouchableOpacity>
-      </View>
-
       {/* Zona Peligrosa */}
       <View style={[styles.card, styles.dangerCard]}>
         <Text style={styles.dangerTitle}>Acciones Destructivas</Text>
-        
-        <TouchableOpacity 
-          style={styles.dangerOption} 
+
+        <TouchableOpacity
+          style={styles.dangerOption}
           onPress={() => setShowDeleteModal(true)}
         >
           <Ionicons name="trash-bin-outline" size={24} color="#D32F2F" />

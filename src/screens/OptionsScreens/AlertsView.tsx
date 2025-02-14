@@ -21,8 +21,6 @@ const AlertsView: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Configuración de Alertas</Text>
-
       {/* Configuración Global */}
       <View style={styles.card}>
         <View style={styles.optionItem}>
@@ -43,7 +41,6 @@ const AlertsView: React.FC = () => {
       {/* Alertas de Reservaciones */}
       <View style={[styles.card, { marginTop: 16 }]}>
         <Text style={styles.sectionTitle}>Alertas de Reservaciones</Text>
-        
         <TouchableOpacity style={styles.optionItem} onPress={() => toggleSwitch('newReservations')}>
           <Ionicons name="add-circle-outline" size={24} color="#1E88E5" />
           <View style={styles.textContainer}>
@@ -56,24 +53,7 @@ const AlertsView: React.FC = () => {
             value={alerts.newReservations}
           />
         </TouchableOpacity>
-
         <View style={styles.divider} />
-
-        <TouchableOpacity style={styles.optionItem} onPress={() => toggleSwitch('cancellations')}>
-          <Ionicons name="close-circle-outline" size={24} color="#1E88E5" />
-          <View style={styles.textContainer}>
-            <Text style={styles.optionTitle}>Cancelaciones</Text>
-            <Text style={styles.optionSubtitle}>Notificar cuando se cancele una reserva</Text>
-          </View>
-          <Switch
-            trackColor={{ false: '#B0BEC5', true: '#90CAF9' }}
-            thumbColor={alerts.cancellations ? '#1E88E5' : '#f4f3f4'}
-            value={alerts.cancellations}
-          />
-        </TouchableOpacity>
-
-        <View style={styles.divider} />
-
         <TouchableOpacity style={styles.optionItem} onPress={() => toggleSwitch('upcomingReservations')}>
           <Ionicons name="alarm-outline" size={24} color="#1E88E5" />
           <View style={styles.textContainer}>
@@ -120,21 +100,6 @@ const AlertsView: React.FC = () => {
           />
         </TouchableOpacity>
       </View>
-
-      {/* Configuración Avanzada */}
-      <TouchableOpacity 
-        style={[styles.card, { marginTop: 16 }]}
-        onPress={() => {/* Navegar a pantalla de configuración avanzada */}}
-      >
-        <View style={styles.optionItem}>
-          <Ionicons name="settings-outline" size={24} color="#1E88E5" />
-          <View style={styles.textContainer}>
-            <Text style={styles.optionTitle}>Configuración Avanzada</Text>
-            <Text style={styles.optionSubtitle}>Personalizar horarios y tipos de alertas</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
-        </View>
-      </TouchableOpacity>
     </ScrollView>
   );
 };

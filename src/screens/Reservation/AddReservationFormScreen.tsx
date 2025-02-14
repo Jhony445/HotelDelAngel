@@ -3,9 +3,9 @@ import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard, Activity
 import { useNavigation } from '@react-navigation/native';
 import { TextInput, Button, Menu, Provider, Dialog, Portal, Text } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { agregarReserva } from '../../services/firebase/AddReservation';
+import { agregarReserva } from '../../services/ReservationServices/AddReservation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { checkRoomAvailability } from '../../services/firebase/checkAvailability';
+import { checkRoomAvailability } from '../../services/ReservationServices/checkAvailability';
 import { KeyboardAvoidingView, ScrollView } from 'react-native';
 
 const AddReservationFormScreen = () => {
