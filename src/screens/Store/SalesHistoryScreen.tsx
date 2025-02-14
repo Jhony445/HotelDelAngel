@@ -1,9 +1,10 @@
-import React from "react";
-import { View, FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import { View, FlatList, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/navigationTypes";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { getSales, Sale } from "../../services/StoreServices/ProductService";
 
 const COLORS = {
     primary: '#2e7d32',
@@ -17,16 +18,35 @@ const COLORS = {
 
 const SalesHistoryScreen: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const [sales, setSales] = useState<Sale[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const sales = [
-        { id: "1", product: "Refresco", quantity: 2, total: 30, date: "2024-03-15 14:30" },
-        { id: "2", product: "Agua Mineral", quantity: 1, total: 10, date: "2024-03-15 12:45" },
-    ];
+    const loadSales = async () => {
+        try {
+            setLoading(true);
+            const salesData = await getSales();
+            setSales(salesData);
+            setError(null);
+        } catch (err) {
+            setError("Error al cargar el historial");
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const SaleHistoryItem = ({ item }: { item: typeof sales[0] }) => (
+    useFocusEffect(
+        React.useCallback(() => {
+            loadSales();
+        }, [])
+    );
+
+
+    const SaleHistoryItem = ({ item }: { item: Sale }) => (
         <TouchableOpacity style={styles.card}>
             <View style={styles.cardHeader}>
-                <Text style={styles.productName}>{item.product}</Text>
+                <Text style={styles.productName}>{item.productName}</Text>
                 <Text style={styles.total}>${item.total.toFixed(2)}</Text>
             </View>
 
@@ -38,15 +58,42 @@ const SalesHistoryScreen: React.FC = () => {
 
                 <View style={styles.detailItem}>
                     <Ionicons name="calendar" size={16} color={COLORS.primary} />
-                    <Text style={styles.detailText}>{item.date}</Text>
+                    <Text style={styles.detailText}>
+                        {item.date.toLocaleDateString('es-MX', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </Text>
                 </View>
             </View>
         </TouchableOpacity>
     );
 
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={48} color={COLORS.error} />
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity onPress={loadSales} style={styles.retryButton}>
+                    <Text style={styles.retryText}>Reintentar</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-
             <FlatList
                 data={sales}
                 keyExtractor={(item) => item.id}
@@ -63,7 +110,34 @@ const SalesHistoryScreen: React.FC = () => {
     );
 };
 
+
 const styles = StyleSheet.create({
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    }, errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    errorText: {
+        color: COLORS.error,
+        fontSize: 16,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    retryButton: {
+        backgroundColor: COLORS.primary,
+        padding: 12,
+        borderRadius: 8,
+    },
+    retryText: {
+        color: COLORS.textLight,
+        fontSize: 16,
+        fontWeight: '600',
+    },
     container: {
         flex: 1,
         backgroundColor: COLORS.background,

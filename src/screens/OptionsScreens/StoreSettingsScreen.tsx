@@ -47,17 +47,6 @@ const StoreSettingsScreen: React.FC = () => {
       {/* Configuración Avanzada */}
       <View style={styles.card}>
         <TouchableOpacity style={styles.optionItem}>
-          <Ionicons name="pricetags-outline" size={24} color="#1E88E5" />
-          <View style={styles.textContainer}>
-            <Text style={styles.optionTitle}>Etiquetas y Precios</Text>
-            <Text style={styles.optionSubtitle}>Configurar formato de precios</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#90A4AE" />
-        </TouchableOpacity>
-
-        <View style={styles.divider} />
-
-        <TouchableOpacity style={styles.optionItem}>
           <Ionicons name="notifications-outline" size={24} color="#1E88E5" />
           <View style={styles.textContainer}>
             <Text style={styles.optionTitle}>Alertas de Stock</Text>

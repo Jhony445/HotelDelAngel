@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, 
-  ScrollView, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Text, 
-  Image, 
+import React, { useState, useEffect, } from "react";
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Image,
   ActivityIndicator,
-  Alert 
+  Alert
 } from "react-native";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/navigationTypes";
@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SaleModal from "../../components/ComponentsStore/SaleModal";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { getProductById, updateProduct, Product } from "../../services/StoreServices/ProductService";
+import { useFocusEffect } from "@react-navigation/native";
 
 const COLORS = {
   primary: '#2e7d32',
@@ -36,28 +37,30 @@ const ProductDetailScreen: React.FC<{ route: ProductDetailRouteProp }> = ({ rout
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadProduct = async () => {
-      try {
-        setLoading(true);
-        const productData = await getProductById(productId);
-        
-        if (productData) {
-          setProduct(productData);
-          setError(null);
-        } else {
-          setError("Producto no encontrado");
-        }
-      } catch (err) {
-        setError("Error al cargar el producto");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadProduct = async () => {
+        try {
+          setLoading(true);
+          const productData = await getProductById(productId);
 
-    loadProduct();
-  }, [productId]);
+          if (productData) {
+            setProduct(productData);
+            setError(null);
+          } else {
+            setError("Producto no encontrado");
+          }
+        } catch (err) {
+          setError("Error al cargar el producto");
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadProduct();
+    }, [productId])
+  );
+
 
   const handleSaleSuccess = async (quantitySold: number) => {
     if (!product) return;
@@ -109,8 +112,8 @@ const ProductDetailScreen: React.FC<{ route: ProductDetailRouteProp }> = ({ rout
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Stock disponible:</Text>
-            <View style={[styles.stockBadge, { 
-              backgroundColor: product.stock <= 5 ? COLORS.error : COLORS.primary 
+            <View style={[styles.stockBadge, {
+              backgroundColor: product.stock <= 5 ? COLORS.error : COLORS.primary
             }]}>
               <Text style={styles.stockText}>{product.stock} unidades</Text>
             </View>
@@ -125,9 +128,9 @@ const ProductDetailScreen: React.FC<{ route: ProductDetailRouteProp }> = ({ rout
 
       <View style={styles.buttonGroup}>
         <TouchableOpacity
-          style={[styles.actionButton, { 
+          style={[styles.actionButton, {
             backgroundColor: product.stock > 0 ? COLORS.primary : '#cccccc',
-            opacity: product.stock > 0 ? 1 : 0.6 
+            opacity: product.stock > 0 ? 1 : 0.6
           }]}
           onPress={() => setModalVisible(true)}
           disabled={product.stock <= 0}
@@ -139,15 +142,23 @@ const ProductDetailScreen: React.FC<{ route: ProductDetailRouteProp }> = ({ rout
 
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: COLORS.secondary }]}
-          onPress={() => navigation.navigate('AddEditProduct', { product })}
+          onPress={() => navigation.navigate('AddEditProduct', {
+            product: {
+              id: product.id,
+              name: product.name,
+              description: product.description || '',
+              price: product.price,
+              stock: product.stock
+            }
+          })}
         >
           <Text style={styles.buttonText}>Editar Producto</Text>
         </TouchableOpacity>
       </View>
 
-      <SaleModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
+      <SaleModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
         product={product}
         onSaleSuccess={handleSaleSuccess}
       />

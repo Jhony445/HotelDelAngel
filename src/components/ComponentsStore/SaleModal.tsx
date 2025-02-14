@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput , Alert} from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { Product } from "../../services/StoreServices/ProductService";
+import { Product, createSale } from "../../services/StoreServices/ProductService";
 
 const COLORS = {
   primary: '#2e7d32',
@@ -43,11 +43,24 @@ const SaleModal: React.FC<SaleModalProps> = ({
     setQuantity(newValue.toString());
   };
 
-  const handleConfirmSale = () => {
+  const handleConfirmSale = async () => {
     const quantityNumber = Number(quantity);
+    
     if (quantityNumber > 0 && quantityNumber <= product.stock) {
-      onSaleSuccess(quantityNumber);
-      onClose();
+      try {
+        // Registrar la venta
+        await createSale({
+          productId: product.id,
+          productName: product.name,
+          quantity: quantityNumber,
+          total: product.price * quantityNumber
+        });
+        
+        onSaleSuccess(quantityNumber);
+        onClose();
+      } catch (error) {
+        Alert.alert("Error", "No se pudo registrar la venta");
+      }
     } else {
       Alert.alert("Error", "Cantidad inválida o excede el stock disponible");
     }

@@ -9,10 +9,10 @@ import {
     getDoc,
     query,
     where,
-    serverTimestamp
+    serverTimestamp,
+    orderBy
 } from "firebase/firestore";
 
-// Tipo para el producto
 export interface Product {
     id: string;
     name: string;
@@ -21,11 +21,21 @@ export interface Product {
     stock: number;
     createdAt: Date;
     updatedAt: Date;
-    status: 'active' | 'archived'; // Para borrado lógico
+    status: 'active' | 'archived';
 }
 
-// Nombre de la colección (sugiero 'products')
+export interface Sale {
+    id: string;
+    productId: string;
+    productName: string;
+    quantity: number;
+    total: number;
+    date: Date;
+}
+
+
 const PRODUCTS_COLLECTION = "products";
+const SALES_COLLECTION = "sales";
 
 // Crear producto
 export const createProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
@@ -103,6 +113,43 @@ export const getProductById = async (productId: string): Promise<Product | null>
         return null;
     } catch (error) {
         console.error("Error getting product: ", error);
+        throw error;
+    }
+};
+
+//Metodos de ventas
+export const createSale = async (saleData: Omit<Sale, 'id' | 'date'>) => {
+    try {
+        const docRef = await addDoc(collection(db, SALES_COLLECTION), {
+            ...saleData,
+            date: serverTimestamp()
+        });
+        return { id: docRef.id, ...saleData };
+    } catch (error) {
+        console.error("Error creating sale: ", error);
+        throw error;
+    }
+};
+
+export const getSales = async (): Promise<Sale[]> => {
+    try {
+        const q = query(
+            collection(db, SALES_COLLECTION),
+            orderBy('date', 'desc')
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            productId: doc.data().productId,
+            productName: doc.data().productName,
+            quantity: doc.data().quantity,
+            total: doc.data().total,
+            date: doc.data().date?.toDate()
+        } as Sale));
+    } catch (error) {
+        console.error("Error getting sales: ", error);
         throw error;
     }
 };
