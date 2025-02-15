@@ -16,12 +16,26 @@ import {
   Menu,
   Provider,
   Portal,
+  DefaultTheme as PaperDefaultTheme,
 } from "react-native-paper";
 import { useNavigation, RouteProp } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { RootStackParamList } from "../../navigation/navigationTypes";
 import { checkRoomAvailability , checkRoomAvailabilityForUpdate } from "../../services/ReservationServices/checkAvailability";
 import { actualizarReserva } from "../../services/ReservationServices/UpdateReservation";
+
+const forcedLightTheme = {
+  ...PaperDefaultTheme,
+  dark: false, // Fuerza modo claro
+  colors: {
+    ...PaperDefaultTheme.colors,
+    primary: "#6d28d9",
+    background: "#ffffff",
+    surface: "#ffffff",
+    text: "#000000",
+  },
+  roundness: 10,
+};
 
 type UpdateReservationRouteProp = RouteProp<
   RootStackParamList,
@@ -123,7 +137,7 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
   };
 
   return (
-    <Provider>
+    <Provider theme={forcedLightTheme}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}

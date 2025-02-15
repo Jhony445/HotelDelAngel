@@ -4,11 +4,11 @@
     "slug": "HotelDelAngel",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/ic_launcher_round.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,11 +16,26 @@
       "supportsTablet": true
     },
     "android": {
+      "config": {
+        "mainActivity": {
+          "android:windowLayoutInDisplayCutoutMode": "shortEdges"
+        }
+      },
       "adaptiveIcon": {
-        "foregroundImage": "./assets/ic_launcher.png",
+        "foregroundImage": "./assets/ic_launcher_round.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jhony058.HotelDelAngel"
+      "package": "com.jhony058.HotelDelAngel",
+      "buildProperties": {
+        "compileSdkVersion": 33,
+        "targetSdkVersion": 33,
+        "minSdkVersion": 21
+      }
+    },
+    "androidStatusBar": {
+      "translucent": true,
+      "backgroundColor": "#00000000",
+      "barStyle": "light-content"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,6 +44,7 @@
       "eas": {
         "projectId": "8198f900-2eba-490c-80e3-0493c21c24be"
       }
-    }
+    },
+    "owner": "jhony058"
   }
 }

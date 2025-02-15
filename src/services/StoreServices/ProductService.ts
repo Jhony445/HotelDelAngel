@@ -177,4 +177,15 @@ export const getSales = async (): Promise<Sale[]> => {
         console.error("Error getting sales: ", error);
         throw error;
     }
+
+};
+
+export const deleteProduct = async (productId: string) => {
+    try {
+        const productRef = doc(db, PRODUCTS_COLLECTION, productId);
+        await deleteDoc(productRef);
+    } catch (error) {
+        console.error("Error deleting product: ", error);
+        throw error;
+    }
 };

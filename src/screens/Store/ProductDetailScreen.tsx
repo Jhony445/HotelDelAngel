@@ -16,6 +16,8 @@ import SaleModal from "../../components/ComponentsStore/SaleModal";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { getProductById, updateProduct, Product } from "../../services/StoreServices/ProductService";
 import { useFocusEffect } from "@react-navigation/native";
+import { deleteProduct } from "../../services/StoreServices/ProductService";
+import { AntDesign } from '@expo/vector-icons';
 
 const COLORS = {
   primary: '#2e7d32',
@@ -24,7 +26,9 @@ const COLORS = {
   textDark: '#1b5e20',
   textLight: '#ffffff',
   error: '#d32f2f',
-  accent: '#c8e6c9'
+  accent: '#c8e6c9',
+  delete: '#d32f2f',
+  deleteHover: '#b71c1c'
 };
 
 type ProductDetailRouteProp = RouteProp<RootStackParamList, "ProductDetail">;
@@ -74,6 +78,35 @@ const ProductDetailScreen: React.FC<{ route: ProductDetailRouteProp }> = ({ rout
       Alert.alert("Error", "No se pudo actualizar el stock");
       console.error(error);
     }
+  };
+
+  const handleDeleteProduct = async () => {
+    Alert.alert(
+      "Eliminar Producto",
+      "¿Estás seguro de eliminar este producto permanentemente?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Eliminar",
+          onPress: async () => {
+            try {
+              if (product) {
+                await deleteProduct(product.id);
+              } else {
+                Alert.alert("Error", "Producto no encontrado");
+              }
+              Alert.alert("Éxito", "Producto eliminado correctamente");
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert("Error", "No se pudo eliminar el producto");
+            }
+          }
+        }
+      ]
+    );
   };
 
   if (loading) {
@@ -154,6 +187,21 @@ const ProductDetailScreen: React.FC<{ route: ProductDetailRouteProp }> = ({ rout
         >
           <Text style={styles.buttonText}>Editar Producto</Text>
         </TouchableOpacity>
+        {product.stock === 0 && (
+          <TouchableOpacity
+            style={[styles.actionButton, {
+              backgroundColor: COLORS.error,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 10
+            }]}
+            onPress={handleDeleteProduct}
+          >
+            <AntDesign name="delete" size={20} color="white" />
+            <Text style={styles.buttonText}>Eliminar Producto</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <SaleModal
@@ -258,13 +306,14 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     padding: 20,
-    gap: 16,
+    gap: 14,
   },
   actionButton: {
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: 'center',
     elevation: 2,
+    width: '100%',
   },
   buttonText: {
     color: COLORS.textLight,

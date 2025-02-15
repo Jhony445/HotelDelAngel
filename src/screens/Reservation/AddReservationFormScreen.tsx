@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { View, Alert, StyleSheet, Platform, TouchableOpacity, Keyboard, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { TextInput, Button, Menu, Provider, Dialog, Portal, Text } from 'react-native-paper';
+import { TextInput, Button, Menu, Provider, Dialog, Portal, Text, DefaultTheme as PaperDefaultTheme } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { agregarReserva } from '../../services/ReservationServices/AddReservation';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { checkRoomAvailability } from '../../services/ReservationServices/checkAvailability';
 import { KeyboardAvoidingView, ScrollView } from 'react-native';
+
+const forcedLightTheme = {
+  ...PaperDefaultTheme,
+  dark: false,
+  colors: {
+    ...PaperDefaultTheme.colors,
+    background: '#ffffff',
+    surface: '#ffffff',
+    text: '#000000',
+    primary: '#6200ee',
+  },
+  roundness: 8,
+};
 
 const AddReservationFormScreen = () => {
   const [isFormDirty, setIsFormDirty] = useState(false);
@@ -134,7 +147,7 @@ const AddReservationFormScreen = () => {
   };
 
   return (
-    <Provider>
+    <Provider theme={forcedLightTheme}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
@@ -411,8 +424,8 @@ const AddReservationFormScreen = () => {
               placeholder="Ejemplo: 2 adultos"
               keyboardType="numeric"
               style={styles.input}
-              left={<TextInput.Icon icon="account-group" />} // Icono de personas
-              right={<TextInput.Affix text="personas" />} // Sufijo opcional
+              left={<TextInput.Icon icon="account-group" />}
+              right={<TextInput.Affix text="personas" />}
             />
 
             {/* Botones de Volver y Guardar */}
