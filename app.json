@@ -4,7 +4,7 @@
     "slug": "HotelDelAngel",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -17,12 +17,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/ic_launcher.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.jhony058.HotelDelAngel"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8198f900-2eba-490c-80e3-0493c21c24be"
+      }
     }
   }
 }
