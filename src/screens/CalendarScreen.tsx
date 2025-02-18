@@ -24,21 +24,39 @@ const CalendarScreen = () => {
   useEffect(() => {
     const q = query(
       collection(db, "reservaciones"),
-      orderBy("date", "desc")
+      orderBy("startDate", "desc")
     );
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          date: doc.data().date.toDate().toLocaleDateString("es-MX", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          rawDate: doc.data().date,
-        }));
+        const data = querySnapshot.docs.map((doc) => {
+          const reservationData = doc.data();
+
+          const safeStartDate =
+            reservationData?.startDate &&
+            typeof reservationData.startDate.toDate === "function"
+              ? reservationData.startDate.toDate()
+              : new Date();
+
+          const safeEndDate =
+            reservationData?.endDate &&
+            typeof reservationData.endDate.toDate === "function"
+              ? reservationData.endDate.toDate()
+              : new Date(safeStartDate);
+
+          return {
+            id: doc.id,
+            ...reservationData,
+            startDate: safeStartDate,
+            endDate: safeEndDate,
+            date: safeStartDate.toLocaleDateString("es-MX", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }),
+            rawDate: safeStartDate,
+          };
+        });
         setReservations(data);
         setLoading(false);
       },
@@ -51,32 +69,50 @@ const CalendarScreen = () => {
 
     return () => unsubscribe();
   }, []);
+
   const filteredReservations = selectedDate
     ? reservations.filter((reservation) => {
-        const dateObj = reservation.rawDate.toDate();
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-        const day = String(dateObj.getDate()).padStart(2, "0");
-        const reservationDateKey = `${year}-${month}-${day}`;
-        return reservationDateKey === selectedDate;
+        const [year, month, day] = selectedDate.split("-").map(Number);
+        const selectedLocal = new Date(year, month - 1, day);
+
+        const startDay = new Date(
+          reservation.startDate.getFullYear(),
+          reservation.startDate.getMonth(),
+          reservation.startDate.getDate()
+        );
+        const endDay = new Date(
+          reservation.endDate.getFullYear(),
+          reservation.endDate.getMonth(),
+          reservation.endDate.getDate()
+        );
+
+        return selectedLocal >= startDay && selectedLocal <= endDay;
       })
     : reservations;
 
   return (
     <View style={styles.container}>
-      {/* Parte superior */}
       <View style={styles.topSection}>
         <Text style={styles.title}>Agenda</Text>
         <View style={[styles.calendarContainer, { height: calendarHeight }]}>
           <CalendarPicker
             onHeightChange={setCalendarHeight}
-            reservations={reservations}
+            reservations={reservations.flatMap((reservation) => {
+              const datesInRange: string[] = [];
+              const startDate = reservation.startDate;
+              const endDate = reservation.endDate;
+              const current = new Date(startDate);
+              while (current <= endDate) {
+                datesInRange.push(current.toISOString().split("T")[0]);
+                current.setDate(current.getDate() + 1);
+              }
+              return datesInRange;
+            })}
             onDateSelected={(date) => setSelectedDate(date)}
           />
         </View>
       </View>
 
-      {/* Parte inferior */}
       <View style={styles.bottomSection}>
         <Text style={styles.sectionSubtitle}>Reservas del Día</Text>
         {loading ? (
@@ -102,8 +138,14 @@ const CalendarScreen = () => {
                     reservation: {
                       id: item.id,
                       ...item,
-                      date: item.rawDate?.toMillis(),
-                      createdAt: item.createdAt?.toMillis(),
+                      startDate: item.startDate.getTime(),
+                      endDate: item.endDate.getTime(),
+                      createdAt:
+                        item.createdAt &&
+                        typeof item.createdAt.toDate === "function"
+                          ? item.createdAt.toDate().getTime()
+                          : item.createdAt,
+                      rawDate: item.startDate.getTime()
                     },
                   })
                 }

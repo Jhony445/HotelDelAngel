@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import BottomTabsNavigator from './src/navigation/BottomTabsNavigator';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import "./src/services/xdateConfig";
 
 export default function App() {
   return (

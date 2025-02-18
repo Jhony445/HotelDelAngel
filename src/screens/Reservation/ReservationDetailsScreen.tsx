@@ -19,7 +19,7 @@ const formatDate = (timestamp: number) => {
 const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRouteProp, navigation: any }) => {
   const { reservation } = route.params;
   const [loading, setLoading] = useState(false);
-  
+
   const getStatusColor = () => {
     switch (reservation.status.toLowerCase()) {
       case 'pagado':
@@ -32,14 +32,14 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
   };
 
   const showCompleteButton = reservation.paymentMethod === 'Pago parcial' || reservation.status === 'Reservado';
-  
+
   const handleCompletePayment = async () => {
     setLoading(true);
     try {
       await actualizarReservaCompleta(reservation.id);
       reservation.paymentMethod = 'Pago completo';
       reservation.status = 'Pagado';
-  
+
       Alert.alert('¡Éxito!', 'El pago se ha marcado como completo');
       navigation.goBack();
     } catch (error) {
@@ -48,7 +48,7 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
       setLoading(false);
     }
   };
-  
+
 
   const amount = parseFloat(reservation.amount) || 0;
   const advancePayment = parseFloat(reservation.advancePayment) || 0;
@@ -67,7 +67,7 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
           <MaterialCommunityIcons name="information" size={24} color="#1a237e" />
           <Text style={styles.sectionTitle}>Información General</Text>
         </View>
-        
+
         <DetailRow icon="bed" label="Habitación" value={reservation.room} />
         <DetailRow icon="account" label="Huésped" value={reservation.guestName} />
         <DetailRow icon="phone" label="Teléfono" value={reservation.phone} />
@@ -81,7 +81,16 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
           <MaterialCommunityIcons name="calendar" size={24} color="#1a237e" />
           <Text style={styles.sectionTitle}>Fechas</Text>
         </View>
-        <DetailRow icon="calendar-check" label="Fecha reservación" value={formatDate(reservation.date)} />
+        <DetailRow
+          icon="calendar-check"
+          label="Fecha inicio"
+          value={formatDate(reservation.startDate)}
+        />
+        <DetailRow
+          icon="calendar-check"
+          label="Fecha fin"
+          value={formatDate(reservation.endDate)}
+        />
         <DetailRow icon="calendar-clock" label="Creación registro" value={formatDate(reservation.createdAt)} />
       </View>
 
@@ -91,32 +100,32 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
           <MaterialCommunityIcons name="cash" size={24} color="#1a237e" />
           <Text style={styles.sectionTitle}>Información de Pago</Text>
         </View>
-        
+
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
           <Text style={styles.statusText}>{reservation.status}</Text>
         </View>
-        
-        <DetailRow 
-          icon="currency-usd" 
-          label="Monto total" 
-          value={`$${amount.toFixed(2)}`} 
+
+        <DetailRow
+          icon="currency-usd"
+          label="Monto total"
+          value={`$${amount.toFixed(2)}`}
         />
-        
+
         {showAdvancePayment && (
-          <DetailRow 
-            icon="cash-multiple" 
-            label="Adelanto" 
-            value={`$${advancePayment.toFixed(2)}`} 
+          <DetailRow
+            icon="cash-multiple"
+            label="Adelanto"
+            value={`$${advancePayment.toFixed(2)}`}
           />
         )}
-        
+
         <DetailRow icon="credit-card" label="Método de pago" value={reservation.paymentMethod} />
         <DetailRow icon="wallet" label="Tipo de pago" value={reservation.paymentMethodType} />
       </View>
 
       {showCompleteButton && (
-        <Button 
-          mode="contained" 
+        <Button
+          mode="contained"
           onPress={handleCompletePayment}
           style={styles.completeButton}
           labelStyle={styles.buttonLabel}

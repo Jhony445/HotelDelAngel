@@ -2,87 +2,95 @@ import { db } from "./firebaseConfig";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 /**
- * Verifica si una habitación está disponible en una fecha específica.
- * @param room - El ID o nombre de la habitación a verificar.
- * @param date - La fecha a comprobar en formato Date.
- * @returns `true` si la habitación está disponible, `false` en caso contrario.
+ * Verifica si una habitación está disponible en el rango [startDate, endDate].
+ * Retorna `true` si está libre (no traslapa con ninguna reserva), `false` si está ocupada.
  */
-export const checkRoomAvailability = async (room: string, date: Date): Promise<boolean> => {
+export const checkRoomAvailability = async (
+  room: string,
+  startDate: Date,
+  endDate: Date
+): Promise<boolean> => {
   try {
-    // Obtiene el inicio y el fin del día para la fecha seleccionada
-    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+    const normalizeDate = (date: Date) => {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    };
 
-    // Consulta Firestore para buscar reservas en el mismo día para la habitación seleccionada
-    const reservacionesRef = collection(db, "reservaciones");
+    const normalizedStart = normalizeDate(startDate);
+    const normalizedEnd = normalizeDate(endDate);
+
     const q = query(
-      reservacionesRef,
+      collection(db, "reservaciones"),
       where("room", "==", room),
-      where("date", ">=", startOfDay),
-      where("date", "<=", endOfDay)
+      where("startDate", "<=", normalizedEnd)
     );
 
     const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) return true;
 
-    // Si hay resultados, la habitación no está disponible
-    return querySnapshot.empty;
+    return !querySnapshot.docs.some(doc => {
+      const reserva = doc.data();
+      const rStart = normalizeDate(reserva.startDate.toDate());
+      const rEnd = normalizeDate(reserva.endDate.toDate());
+      
+      return (
+        (rStart < normalizedEnd) && 
+        (rEnd > normalizedStart)
+      );
+    });
   } catch (error) {
-    console.error("Error verificando disponibilidad de la habitación:", error);
-    throw new Error("No se pudo verificar la disponibilidad");
+    console.error("Error:", error);
+    throw error;
   }
 };
 
 /**
- * Verifica si una habitación está disponible en una fecha específica para el caso de actualización.
- * Si la única reserva encontrada es la misma que la que se está actualizando (según reservationId),
- * se considerará que la habitación está disponible.
- * 
- * @param room - El ID o nombre de la habitación a verificar.
- * @param date - La fecha a comprobar (tipo Date).
- * @param reservationId - El ID de la reserva que se está actualizando.
- * @returns `true` si la habitación está disponible o si la única reserva es la propia, `false` en caso contrario.
+ * Verifica disponibilidad para actualizar una reserva existente (reservationId).
+ * Permite que la única reserva traslapada sea la propia.
  */
 export const checkRoomAvailabilityForUpdate = async (
   room: string,
-  date: Date,
+  startDate: Date,
+  endDate: Date,
   reservationId: string
 ): Promise<boolean> => {
   try {
-    // Clonar la fecha para no modificar el objeto original.
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const normalizeDate = (date: Date) => {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    };
 
-    // Consulta Firestore para buscar reservas en la misma habitación y el mismo día.
-    const reservacionesRef = collection(db, "reservaciones");
+    const normalizedStart = normalizeDate(startDate);
+    const normalizedEnd = normalizeDate(endDate);
+
     const q = query(
-      reservacionesRef,
+      collection(db, "reservaciones"),
       where("room", "==", room),
-      where("date", ">=", startOfDay),
-      where("date", "<=", endOfDay)
+      where("startDate", "<=", normalizedEnd)
     );
 
     const querySnapshot = await getDocs(q);
 
-    // Si no hay reservas, la habitación está disponible.
-    if (querySnapshot.empty) {
-      return true;
-    }
+    if (querySnapshot.empty) return true;
 
-    // Recorremos las reservas encontradas.
-    let differentReservationFound = false;
-    querySnapshot.forEach((doc) => {
-      // Si se encuentra alguna reserva cuyo ID sea distinto a la que se está actualizando,
-      // significa que la habitación ya está ocupada para esa fecha.
-      if (doc.id !== reservationId) {
-        differentReservationFound = true;
-      }
+    return !querySnapshot.docs.some((doc) => {
+      if (doc.id === reservationId) return false; // Ignorar la reserva actual
+
+      const reserva = doc.data();
+      const rStart = normalizeDate(reserva.startDate.toDate());
+      const rEnd = normalizeDate(reserva.endDate.toDate());
+
+      // Comprobar si hay traslape de fechas
+      return (
+        (rStart < normalizedEnd && rEnd > normalizedStart) ||
+        (rStart <= normalizedStart && rEnd >= normalizedEnd)
+      );
     });
-
-    return !differentReservationFound;
   } catch (error) {
-    console.error("Error verificando disponibilidad de la habitación para actualización:", error);
-    throw new Error("No se pudo verificar la disponibilidad para actualización");
+    console.error("Error:", error);
+    throw error;
   }
 };

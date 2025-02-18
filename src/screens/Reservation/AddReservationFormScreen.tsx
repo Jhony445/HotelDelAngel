@@ -30,6 +30,7 @@ const AddReservationFormScreen = () => {
   const [company, setCompany] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState<Date | null>(null);
+  const [numDays, setNumDays] = useState('1');
   const [menuVisible, setMenuVisible] = useState(false);
   const [paymentMenuVisible, setPaymentMenuVisible] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -45,6 +46,7 @@ const AddReservationFormScreen = () => {
   const [reservationMenuVisible, setReservationMenuVisible] = useState(false);
   const [methodMenuVisible, setMethodMenuVisible] = useState(false);
   const [paymentMethodType, setPaymentMethodType] = useState('');
+  const [manualAdvancePayment, setManualAdvancePayment] = useState(false);
 
   const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L', '1-Posada', '2-Posada', '3-Posada'];
   const paymentMethodValues: { [key: string]: string } = {
@@ -93,43 +95,58 @@ const AddReservationFormScreen = () => {
       Alert.alert("Error", "Selecciona una habitación y una fecha");
       return;
     }
+    const days = parseInt(numDays, 10);
+    if (isNaN(days) || days < 1) {
+      Alert.alert("Error", "Número de días inválido");
+      return;
+    }
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + days);
+    endDate.setHours(0, 0, 0, 0);
 
     try {
-      const isAvailable = await checkRoomAvailability(room, date);
+      const isAvailable = await checkRoomAvailability(room, date, endDate);
 
       if (!isAvailable) {
-        Alert.alert("Habitación ocupada", "La habitación seleccionada no está disponible para esta fecha. Por favor, elige otra fecha u otra habitación.");
+        Alert.alert(
+          "Habitación ocupada",
+          "La habitación seleccionada no está disponible para esas fechas."
+        );
         return;
       }
 
       setCurrentStep(2);
     } catch (error) {
-      Alert.alert("Error", "No se pudo verificar la disponibilidad. Intenta de nuevo más tarde.");
+      Alert.alert("Error", "No se pudo verificar la disponibilidad.");
     }
   };
-
   const handleSubmit = async () => {
     if (!guestName || !phone || !amount || !paymentMethod || !paymentMethodType) {
-      Alert.alert("Error", "Por favor completa todos los campos antes de guardar.");
+      Alert.alert("Error", "Por favor completa todos los campos.");
       return;
     }
 
     setLoading(true);
     setDialogVisible(true);
     setDialogMessage("Guardando reserva...");
+    const days = parseInt(numDays, 10) || 1;
+    const endDate = new Date(date!);
+    endDate.setDate(endDate.getDate() + days);
+    endDate.setHours(0, 0, 0, 0);
 
     try {
       const status = paymentMethod === "Reservación (50%)" ? "Reservado" : "Pagado";
 
       await agregarReserva({
         room,
-        date: date!,
+        startDate: date!,
+        endDate,
         guestName,
         phone,
         company: company || 'No especificado',
         amount,
         paymentMethod: paymentMethodValues[paymentMethod],
-        paymentMethodType: paymentMethodType,
+        paymentMethodType,
         advancePayment,
         status,
         peoples: peoples ? parseInt(peoples) : 1,
@@ -153,306 +170,335 @@ const AddReservationFormScreen = () => {
         style={styles.flex}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
       >
-       <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled"
-      >
-      <View style={styles.container}>
-        {currentStep === 1 && (
-          <>
-            {/* Selector de Habitación */}
-            <Menu
-              visible={menuVisible}
-              onDismiss={() => setMenuVisible(false)}
-              anchor={
-                <TouchableOpacity
-                  onPress={() => {
-                    setMenuVisible(true);
-                    Keyboard.dismiss();
-                  }}
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            {currentStep === 1 && (
+              <>
+                {/* Selector de Habitación */}
+                <Menu
+                  visible={menuVisible}
+                  onDismiss={() => setMenuVisible(false)}
+                  anchor={
+                    <TouchableOpacity
+                      onPress={() => {
+                        setMenuVisible(true);
+                        Keyboard.dismiss();
+                      }}
+                    >
+                      <TextInput
+                        label="Seleccionar habitación"
+                        value={room}
+                        mode="outlined"
+                        style={[styles.input, !room && styles.placeholderText]}
+                        editable={false}
+                        left={<TextInput.Icon icon="bed" />}
+                      />
+                    </TouchableOpacity>
+                  }
                 >
-                  <TextInput
-                    label="Seleccionar habitación"
-                    value={room}
-                    mode="outlined"
-                    style={[styles.input, !room && styles.placeholderText]}
-                    editable={false}
-                    left={<TextInput.Icon icon="bed" />}
-                  />
+                  {roomOptions.map((option, index) => (
+                    <Menu.Item
+                      key={index}
+                      title={option}
+                      onPress={() => {
+                        setRoom(option);
+                        setMenuVisible(false);
+                        handleInputChange();
+                      }}
+                    />
+                  ))}
+                </Menu>
+
+                {/* Selector de Fecha */}
+                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                  <View pointerEvents="box-only">
+                    <TextInput
+                      label="Seleccionar fecha"
+                      value={date ? date.toLocaleDateString() : ''}
+                      mode="outlined"
+                      style={[styles.input, !date && styles.placeholderText]}
+                      editable={false}
+                      left={<TextInput.Icon icon="calendar" />}
+                    />
+                  </View>
                 </TouchableOpacity>
-              }
-            >
-              {roomOptions.map((option, index) => (
-                <Menu.Item
-                  key={index}
-                  title={option}
-                  onPress={() => {
-                    setRoom(option);
-                    setMenuVisible(false);
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={date || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleDateChange}
+                  />
+                )}
+
+                {/* Número de días */}
+                <TextInput
+                  label="¿Cuántos días?"
+                  value={numDays}
+                  mode="outlined"
+                  style={[styles.input]}
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    // Aseguramos que solo sean dígitos
+                    const numericValue = text.replace(/[^0-9]/g, '');
+                    setNumDays(numericValue);
                     handleInputChange();
                   }}
+                  left={<TextInput.Icon icon="calendar-range" />}
                 />
-              ))}
-            </Menu>
 
-            {/* Selector de Fecha */}
-            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-              <View pointerEvents="box-only">
-                <TextInput
-                  label="Seleccionar fecha"
-                  value={date ? date.toLocaleDateString() : ''}
-                  mode="outlined"
-                  style={[styles.input, !date && styles.placeholderText]}
-                  editable={false}
-                  left={<TextInput.Icon icon="calendar" />}
-                />
-              </View>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={date || new Date()}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleDateChange}
-              />
-            )}
-
-            {/* Botón Siguiente */}
-            <Button
-              mode="contained"
-              onPress={handleNextStep}
-              style={styles.button}
-              disabled={!room || !date}
-            >
-              Siguiente
-            </Button>
-          </>
-        )}
-
-        {currentStep === 2 && (
-          <>
-            {currentStep === 2 && (
-              <>
-                {/* Tipo de Pago (Reservación) */}
-                <Menu
-                  visible={paymentMenuVisible}
-                  onDismiss={() => setPaymentMenuVisible(false)}
-                  anchor={
-                    <TouchableOpacity
-                      onPress={() => {
-                        setPaymentMenuVisible(true);
-                        Keyboard.dismiss();
-                      }}
-                    >
-                      <TextInput
-                        label="Tipo de Reservación"
-                        value={paymentMethod}
-                        mode="outlined"
-                        style={[styles.input, !paymentMethod && styles.placeholderText]}
-                        editable={false}
-                        left={<TextInput.Icon icon="credit-card-outline" />}
-                      />
-                    </TouchableOpacity>
-                  }
+                {/* Botón Siguiente */}
+                <Button
+                  mode="contained"
+                  onPress={handleNextStep}
+                  style={styles.button}
+                  disabled={!room || !date}
                 >
-                  {Object.keys(paymentMethodValues).map((option, index) => (
-                    <Menu.Item
-                      key={index}
-                      title={option}
-                      onPress={() => {
-                        setPaymentMethod(option);
-                        setAmount('');
-                        setAdvancePayment('');
-                        setPaymentMenuVisible(false);
-                        handleInputChange();
-                      }}
-                    />
-                  ))}
-                </Menu>
-
-                {/* Método de Pago (Efectivo/Tarjeta) */}
-                <Menu
-                  visible={methodMenuVisible}
-                  onDismiss={() => setMethodMenuVisible(false)}
-                  anchor={
-                    <TouchableOpacity
-                      onPress={() => {
-                        setMethodMenuVisible(true);
-                        Keyboard.dismiss();
-                      }}
-                    >
-                      <TextInput
-                        label="Método de Pago"
-                        value={Object.keys(paymentMethodTypeValues).find(
-                          key => paymentMethodTypeValues[key] === paymentMethodType
-                        ) || ''}
-                        mode="outlined"
-                        style={[styles.input, !paymentMethodType && styles.placeholderText]}
-                        editable={false}
-                        left={<TextInput.Icon icon="cash" />}
-                      />
-                    </TouchableOpacity>
-                  }
-                >
-                  {Object.keys(paymentMethodTypeValues).map((option, index) => (
-                    <Menu.Item
-                      key={index}
-                      title={option}
-                      onPress={() => {
-                        setPaymentMethodType(paymentMethodTypeValues[option]);
-                        setMethodMenuVisible(false);
-                        handleInputChange();
-                      }}
-                    />
-                  ))}
-                </Menu>
-                {/* Campos Dinámicos Según el Tipo de Pago */}
-                {paymentMethod === 'Reservación (50%)' && (
-                  <>
-                    <TextInput
-                      label="Monto Total"
-                      value={amount}
-                      onChangeText={(text) => {
-                        const numericValue = text.replace(/[^0-9.]/g, '');
-                        setAmount(numericValue);
-                        setAdvancePayment((parseFloat(numericValue || '0') * 0.5).toFixed(2));
-                        handleInputChange();
-                      }}
-                      mode="outlined"
-                      keyboardType="numeric"
-                      placeholder="Ejemplo: 1000.00"
-                      style={[styles.input, !amount && styles.placeholderText]}
-                      left={<TextInput.Icon icon="cash" />}
-                    />
-                    <TextInput
-                      label="Adelanto (50%)"
-                      value={advancePayment}
-                      editable={false}
-                      mode="outlined"
-                      style={styles.input}
-                      left={<TextInput.Icon icon="cash-multiple" />}
-                    />
-                  </>
-                )}
-
-                {paymentMethod === 'Reservación pagada' && (
-                  <TextInput
-                    label="Monto Total"
-                    value={amount}
-                    onChangeText={(text) => {
-                      const numericValue = text.replace(/[^0-9.]/g, '');
-                      setAmount(numericValue);
-                      handleInputChange();
-                    }}
-                    mode="outlined"
-                    keyboardType="numeric"
-                    placeholder="Ejemplo: 1000.00"
-                    style={[styles.input, !amount && styles.placeholderText]}
-                    left={<TextInput.Icon icon="cash" />}
-                  />
-                )}
-
-                {paymentMethod === 'Registro directo' && (
-                  <TextInput
-                    label="Pago Total"
-                    value={amount}
-                    onChangeText={(text) => {
-                      const numericValue = text.replace(/[^0-9.]/g, '');
-                      setAmount(numericValue);
-                      handleInputChange();
-                    }}
-                    mode="outlined"
-                    keyboardType="numeric"
-                    placeholder="Ejemplo: 1000.00"
-                    style={[styles.input, !amount && styles.placeholderText]}
-                    left={<TextInput.Icon icon="cash-register" />}
-                  />
-                )}
+                  Siguiente
+                </Button>
               </>
             )}
+            {currentStep === 2 && (
+              <>
+                {currentStep === 2 && (
+                  <>
+                    {/* Tipo de Pago (Reservación) */}
+                    <Menu
+                      visible={paymentMenuVisible}
+                      onDismiss={() => setPaymentMenuVisible(false)}
+                      anchor={
+                        <TouchableOpacity
+                          onPress={() => {
+                            setPaymentMenuVisible(true);
+                            Keyboard.dismiss();
+                          }}
+                        >
+                          <TextInput
+                            label="Tipo de Reservación"
+                            value={paymentMethod}
+                            mode="outlined"
+                            style={[styles.input, !paymentMethod && styles.placeholderText]}
+                            editable={false}
+                            left={<TextInput.Icon icon="credit-card-outline" />}
+                          />
+                        </TouchableOpacity>
+                      }
+                    >
+                      {Object.keys(paymentMethodValues).map((option, index) => (
+                        <Menu.Item
+                          key={index}
+                          title={option}
+                          onPress={() => {
+                            setPaymentMethod(option);
+                            setAmount('');
+                            setAdvancePayment('');
+                            setPaymentMenuVisible(false);
+                            handleInputChange();
+                          }}
+                        />
+                      ))}
+                    </Menu>
 
-            {/* Información del Cliente */}
-            <TextInput
-              label="Nombre del Cliente"
-              value={guestName}
-              onChangeText={(text) => {
-                setGuestName(text);
-                handleInputChange();
-              }}
-              mode="outlined"
-              placeholder="Ejemplo: Juan Pérez"
-              style={[styles.input, !guestName && styles.placeholderText]}
-              left={<TextInput.Icon icon="account" />}
-            />
+                    {/* Método de Pago (Efectivo/Tarjeta) */}
+                    <Menu
+                      visible={methodMenuVisible}
+                      onDismiss={() => setMethodMenuVisible(false)}
+                      anchor={
+                        <TouchableOpacity
+                          onPress={() => {
+                            setMethodMenuVisible(true);
+                            Keyboard.dismiss();
+                          }}
+                        >
+                          <TextInput
+                            label="Método de Pago"
+                            value={Object.keys(paymentMethodTypeValues).find(
+                              key => paymentMethodTypeValues[key] === paymentMethodType
+                            ) || ''}
+                            mode="outlined"
+                            style={[styles.input, !paymentMethodType && styles.placeholderText]}
+                            editable={false}
+                            left={<TextInput.Icon icon="cash" />}
+                          />
+                        </TouchableOpacity>
+                      }
+                    >
+                      {Object.keys(paymentMethodTypeValues).map((option, index) => (
+                        <Menu.Item
+                          key={index}
+                          title={option}
+                          onPress={() => {
+                            setPaymentMethodType(paymentMethodTypeValues[option]);
+                            setMethodMenuVisible(false);
+                            handleInputChange();
+                          }}
+                        />
+                      ))}
+                    </Menu>
+                    {/* Campos Dinámicos Según el Tipo de Pago */}
+                    {paymentMethod === 'Reservación (50%)' && (
+                      <>
+                        <TextInput
+                          label="Monto Total"
+                          value={amount}
+                          onChangeText={(text) => {
+                            const numericValue = text.replace(/[^0-9.]/g, '');
+                            setAmount(numericValue);
+                            // Si no se ha editado manualmente el adelanto, se recalcula automáticamente
+                            if (!manualAdvancePayment) {
+                              setAdvancePayment((parseFloat(numericValue || '0') * 0.5).toFixed(2));
+                            }
+                            handleInputChange();
+                          }}
+                          mode="outlined"
+                          keyboardType="numeric"
+                          placeholder="Ejemplo: 1000.00"
+                          style={[styles.input, !amount && styles.placeholderText]}
+                          left={<TextInput.Icon icon="cash" />}
+                        />
+                        <TextInput
+                          label="Adelanto (50%)"
+                          value={advancePayment}
+                          onChangeText={(text) => {
+                            const numericValue = text.replace(/[^0-9.]/g, '');
+                            setAdvancePayment(numericValue);
+                            // Se marca que el usuario ha editado manualmente (si el campo no está vacío)
+                            setManualAdvancePayment(numericValue !== "");
+                          }}
+                          onBlur={() => {
+                            // Si al salir el campo está vacío, se restaura el cálculo automático
+                            if (advancePayment.trim() === "") {
+                              const autoValue = (parseFloat(amount || '0') * 0.5).toFixed(2);
+                              setAdvancePayment(autoValue);
+                              setManualAdvancePayment(false);
+                            }
+                          }}
+                          mode="outlined"
+                          keyboardType="numeric"
+                          style={styles.input}
+                          left={<TextInput.Icon icon="cash-multiple" />}
+                        />
+                      </>
+                    )}
+                    {paymentMethod === 'Reservación pagada' && (
+                      <TextInput
+                        label="Monto Total"
+                        value={amount}
+                        onChangeText={(text) => {
+                          const numericValue = text.replace(/[^0-9.]/g, '');
+                          setAmount(numericValue);
+                          handleInputChange();
+                        }}
+                        mode="outlined"
+                        keyboardType="numeric"
+                        placeholder="Ejemplo: 1000.00"
+                        style={[styles.input, !amount && styles.placeholderText]}
+                        left={<TextInput.Icon icon="cash" />}
+                      />
+                    )}
+                    {paymentMethod === 'Registro directo' && (
+                      <TextInput
+                        label="Pago Total"
+                        value={amount}
+                        onChangeText={(text) => {
+                          const numericValue = text.replace(/[^0-9.]/g, '');
+                          setAmount(numericValue);
+                          handleInputChange();
+                        }}
+                        mode="outlined"
+                        keyboardType="numeric"
+                        placeholder="Ejemplo: 1000.00"
+                        style={[styles.input, !amount && styles.placeholderText]}
+                        left={<TextInput.Icon icon="cash-register" />}
+                      />
+                    )}
+                  </>
+                )}
+                {/* Información del Cliente */}
+                <TextInput
+                  label="Nombre del Cliente"
+                  value={guestName}
+                  onChangeText={(text) => {
+                    setGuestName(text);
+                    handleInputChange();
+                  }}
+                  mode="outlined"
+                  placeholder="Ejemplo: Juan Pérez"
+                  style={[styles.input, !guestName && styles.placeholderText]}
+                  left={<TextInput.Icon icon="account" />}
+                />
 
-            <TextInput
-              label="Teléfono"
-              value={phone}
-              onChangeText={(text) => {
-                setPhone(text);
-                handleInputChange();
-              }}
-              mode="outlined"
-              keyboardType="phone-pad"
-              placeholder="Ejemplo: 5551234567"
-              style={[styles.input, !phone && styles.placeholderText]}
-              left={<TextInput.Icon icon="phone" />}
-            />
+                <TextInput
+                  label="Teléfono"
+                  value={phone}
+                  onChangeText={(text) => {
+                    setPhone(text);
+                    handleInputChange();
+                  }}
+                  mode="outlined"
+                  keyboardType="phone-pad"
+                  placeholder="Ejemplo: 5551234567"
+                  style={[styles.input, !phone && styles.placeholderText]}
+                  left={<TextInput.Icon icon="phone" />}
+                />
 
-            <TextInput
-              label="Compañía (Opcional)"
-              value={company}
-              onChangeText={(text) => {
-                setCompany(text);
-                handleInputChange();
-              }}
-              mode="outlined"
-              placeholder="Ejemplo: Empresa XYZ"
-              style={[styles.input]}
-              left={<TextInput.Icon icon="domain" />}
-            />
+                <TextInput
+                  label="Compañía (Opcional)"
+                  value={company}
+                  onChangeText={(text) => {
+                    setCompany(text);
+                    handleInputChange();
+                  }}
+                  mode="outlined"
+                  placeholder="Ejemplo: Empresa XYZ"
+                  style={[styles.input]}
+                  left={<TextInput.Icon icon="domain" />}
+                />
 
-            <TextInput
-              label="Huéspedes (Opcional)"
-              value={peoples}
-              onChangeText={(text) => {
-                const numericValue = text.replace(/[^0-9]/g, '');
-                setPeoples(numericValue);
-                handleInputChange();
-              }}
-              mode="outlined"
-              placeholder="Ejemplo: 2 adultos"
-              keyboardType="numeric"
-              style={styles.input}
-              left={<TextInput.Icon icon="account-group" />}
-              right={<TextInput.Affix text="personas" />}
-            />
+                <TextInput
+                  label="Huéspedes (Opcional)"
+                  value={peoples}
+                  onChangeText={(text) => {
+                    const numericValue = text.replace(/[^0-9]/g, '');
+                    setPeoples(numericValue);
+                    handleInputChange();
+                  }}
+                  mode="outlined"
+                  placeholder="Ejemplo: 2 adultos"
+                  keyboardType="numeric"
+                  style={styles.input}
+                  left={<TextInput.Icon icon="account-group" />}
+                  right={<TextInput.Affix text="personas" />}
+                />
 
-            {/* Botones de Volver y Guardar */}
-            <View style={styles.buttonContainer}>
-              <Button
-                mode="outlined"
-                onPress={() => setCurrentStep(1)}
-                style={styles.buttonBack}
-              >
-                Volver
-              </Button>
-              <Button
-                mode="contained"
-                onPress={handleSubmit}
-                style={styles.buttonSave}
-                disabled={
-                  !guestName || !phone || !amount || !paymentMethod || !paymentMethodType
-                }
-              >
-                Guardar
-              </Button>
-            </View>
-          </>
-        )}
-      </View>
+                {/* Botones de Volver y Guardar */}
+                <View style={styles.buttonContainer}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => setCurrentStep(1)}
+                    style={styles.buttonBack}
+                  >
+                    Volver
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={handleSubmit}
+                    style={styles.buttonSave}
+                    disabled={
+                      !guestName || !phone || !amount || !paymentMethod || !paymentMethodType
+                    }
+                  >
+                    Guardar
+                  </Button>
+                </View>
+              </>
+            )}
+          </View>
 
-      </ScrollView>
+        </ScrollView>
       </KeyboardAvoidingView>
       {/* Modal de Carga y Resultado */}
       <Portal>
@@ -491,7 +537,6 @@ const AddReservationFormScreen = () => {
           </Dialog.Content>
         </Dialog>
       </Portal>
-
     </Provider>
   );
 };

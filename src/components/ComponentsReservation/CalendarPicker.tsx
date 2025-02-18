@@ -36,9 +36,7 @@ const CalendarPicker: React.FC<CalendarPickerProps> = ({
   ];
 
   const onDayPress = (day: DateData) => {
-    // Se actualiza la fecha seleccionada (formato "YYYY-MM-DD")
     setSelectedDate(day.dateString);
-    // Se envía al componente padre la fecha seleccionada
     onDateSelected && onDateSelected(day.dateString);
   };
 
@@ -57,20 +55,31 @@ const CalendarPicker: React.FC<CalendarPickerProps> = ({
     onHeightChange?.(calculatedHeight);
   };
 
-  // Genera marcas de reservaciones usando la fecha local
   const reservationMarks: { [date: string]: any } = {};
   reservations.forEach((reservation) => {
-    const dateObj = reservation.rawDate.toDate();
-    // Extrae la fecha local: año, mes y día
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const day = String(dateObj.getDate()).padStart(2, "0");
-    const dateKey = `${year}-${month}-${day}`;
-
-    if (!reservationMarks[dateKey]) {
-      reservationMarks[dateKey] = {
-        dots: [{ key: "reservation", color: "#1E88E5", selectedDotColor: "#ffffff" }],
-      };
+    let dateKey = "";
+    if (typeof reservation === "string") {
+      dateKey = reservation;
+    } else if (reservation.rawDate) {
+      let dateObj;
+      if (typeof reservation.rawDate.toDate === "function") {
+        dateObj = reservation.rawDate.toDate();
+      } else if (reservation.rawDate instanceof Date) {
+        dateObj = reservation.rawDate;
+      }
+      if (dateObj) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        dateKey = `${year}-${month}-${day}`;
+      }
+    }
+    if (dateKey) {
+      if (!reservationMarks[dateKey]) {
+        reservationMarks[dateKey] = {
+          dots: [{ key: "reservation", color: "#1E88E5", selectedDotColor: "#ffffff" }],
+        };
+      }
     }
   });
 

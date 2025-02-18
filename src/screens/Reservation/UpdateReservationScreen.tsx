@@ -21,7 +21,7 @@ import {
 import { useNavigation, RouteProp } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { RootStackParamList } from "../../navigation/navigationTypes";
-import { checkRoomAvailability , checkRoomAvailabilityForUpdate } from "../../services/ReservationServices/checkAvailability";
+import { checkRoomAvailability, checkRoomAvailabilityForUpdate } from "../../services/ReservationServices/checkAvailability";
 import { actualizarReserva } from "../../services/ReservationServices/UpdateReservation";
 
 const forcedLightTheme = {
@@ -81,12 +81,12 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
   const [advancePayment, setAdvancePayment] = useState(
     reservation.advancePayment || ""
   );
-  const [date, setDate] = useState(new Date(reservation.date));
+  const [date, setDate] = useState(new Date(reservation.startDate));
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [peoples, setPeoples] = useState(reservation.peoples?.toString() || "");
   const [menuVisible, setMenuVisible] = useState(false);
-
+  const [numDays, setNumDays] = useState("1");
   const handleDateChange = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
@@ -102,13 +102,25 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
 
     setLoading(true);
     try {
-      const isAvailable = await checkRoomAvailabilityForUpdate(room, date, reservation.id);
+      const days = parseInt(numDays, 10) || 1;
+      const newStartDate = new Date(date);
+      newStartDate.setHours(0, 0, 0, 0);
+
+      const newEndDate = new Date(date);
+      newEndDate.setDate(newEndDate.getDate() + days);
+      newEndDate.setHours(0, 0, 0, 0);
+      const isAvailable = await checkRoomAvailabilityForUpdate(
+        room,
+        newStartDate,
+        newEndDate,
+        reservation.id
+      );
+
       if (!isAvailable) {
         Alert.alert(
           "Habitación ocupada",
-          "La habitación seleccionada no está disponible para esta fecha."
+          "La habitación seleccionada no está disponible para esas fechas."
         );
-        setLoading(false);
         return;
       }
 
@@ -123,14 +135,16 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
         paymentMethod,
         paymentMethodType,
         advancePayment,
-        date,
+        startDate: newStartDate,
+        endDate: newEndDate,
       };
 
       await actualizarReserva(reservation.id, updatedData);
+
       Alert.alert("¡Éxito!", "La reservación se actualizó correctamente.");
       navigation.goBack();
-    } catch (error) {
-      Alert.alert("Error", "No se pudo actualizar la reservación.");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "No se pudo actualizar la reservación.");
     } finally {
       setLoading(false);
     }
@@ -191,7 +205,7 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
               style={styles.dateInput}
             >
               <TextInput
-                label="Fecha"
+                label="Fecha de Inicio"
                 value={date.toLocaleDateString()}
                 style={styles.input}
                 editable={false}
@@ -200,6 +214,16 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
                 left={<TextInput.Icon icon="calendar" />}
               />
             </TouchableOpacity>
+            <TextInput
+              label="Número de Días"
+              value={numDays}
+              onChangeText={(text) => setNumDays(text.replace(/[^0-9]/g, ""))}
+              style={styles.input}
+              keyboardType="numeric"
+              mode="outlined"
+              theme={inputTheme}
+              left={<TextInput.Icon icon="calendar-range" />}
+            />
           </View>
 
           {/* Sección Huéspedes */}

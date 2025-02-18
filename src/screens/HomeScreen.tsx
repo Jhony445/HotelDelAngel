@@ -67,13 +67,15 @@ const HomeScreen = () => {
   const endNextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0, 23, 59, 59, 999);
 
   const reservationsWithinRange = filteredReservations.filter(reservation => {
-    let resDate: Date;
-    if (reservation.rawDate && typeof reservation.rawDate.toDate === 'function') {
-      resDate = reservation.rawDate.toDate();
+    let startDate: Date;
+
+    if (reservation.startDate && typeof reservation.startDate.toDate === 'function') {
+      startDate = reservation.startDate.toDate();
     } else {
-      resDate = new Date(reservation.rawDate);
+      startDate = new Date(reservation.startDate);
     }
-    return resDate >= startCurrentMonth && resDate <= endNextMonth;
+  
+    return startDate >= startCurrentMonth && startDate <= endNextMonth;
   });
   // ---------------------------------------------------------------------------------
 
@@ -106,12 +108,15 @@ const HomeScreen = () => {
             <SubTitle text="Reservaciones próximas" />
           </View>
           <FlatList
-            data={reservationsWithinRange}  // Usamos el array filtrado
+            data={reservationsWithinRange}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <ReservationListItem
                 guestName={item.guestName || ''}
-                date={item.date || 'Sin fecha'} // "date" ya viene formateado para la card
+                date={item.startDate ? 
+                  item.startDate.toLocaleDateString('es-MX') :
+                  'Sin fecha'
+                }
                 room={item.room || ''}
                 paymentMethod={item.paymentMethod || 'No especificado'}
                 amount={item.amount || '0'}
@@ -123,8 +128,9 @@ const HomeScreen = () => {
                     reservation: {
                       id: item.id,
                       ...item,
-                      date: item.rawDate?.toMillis(),
-                      createdAt: item.createdAt?.toMillis()
+                      startDate: item.startDate?.getTime(),
+                      endDate: item.endDate?.getTime(),
+                      createdAt: item.createdAt?.getTime()
                     }
                   })
                 }
