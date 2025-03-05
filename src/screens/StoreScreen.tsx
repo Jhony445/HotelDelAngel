@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/navigationTypes";
 import ProductListItem from "../components/ComponentsStore/ProductListItem";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { getProducts, Product } from "../services/StoreServices/ProductService";
+import SearchBar from "../components/ComponentsStore/SearchBar";
+import { debounce } from "lodash";
 
 const COLORS = {
   primary: '#2e7d32',
@@ -19,6 +21,8 @@ const COLORS = {
 const StoreScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +31,7 @@ const StoreScreen: React.FC = () => {
       setLoading(true);
       const productsData = await getProducts();
       setProducts(productsData);
+      setFilteredProducts(productsData);
       setError(null);
     } catch (err) {
       setError("Error al cargar los productos");
@@ -36,9 +41,20 @@ const StoreScreen: React.FC = () => {
     }
   };
 
+  const handleSearch = debounce((query: string) => {
+    const filtered = query
+      ? products.filter(product =>
+        product.name.toLowerCase().includes(query.toLowerCase())
+      )
+      : products;
+
+    setFilteredProducts(filtered);
+  }, 300);
+
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchProducts();
+      setSearchQuery('');
     }, [])
   );
 
@@ -64,7 +80,7 @@ const StoreScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={products}
+        data={filteredProducts}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ProductListItem
@@ -73,15 +89,33 @@ const StoreScreen: React.FC = () => {
           />
         )}
         contentContainerStyle={styles.listContent}
-        ListHeaderComponent={<Text style={styles.sectionTitle}>Productos en Inventario</Text>} // Agregado
+        ListHeaderComponent={
+          <>
+            <Text style={styles.sectionTitle}>Productos en Inventario</Text>
+            <SearchBar
+              onSearch={(query) => {
+                setSearchQuery(query);
+                handleSearch(query);
+              }}
+              onClear={() => {
+                setSearchQuery('');
+                setFilteredProducts(products);
+              }}
+            />
+            {searchQuery && (
+              <Text style={styles.resultsText}>
+                {filteredProducts.length} resultados para "{searchQuery}"
+              </Text>
+            )}
+          </>
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="alert-circle" size={48} color={COLORS.primary} />
-            <Text style={styles.emptyText}>No hay productos registrados</Text>
+            <Text style={styles.emptyText}>No se encontraron productos</Text>
           </View>
         }
       />
-
       <View style={styles.fabContainer}>
         <TouchableOpacity
           style={styles.fabButton}
@@ -89,12 +123,12 @@ const StoreScreen: React.FC = () => {
         >
           <Ionicons name="add" size={28} color={COLORS.textLight} />
         </TouchableOpacity>
-        <TouchableOpacity 
-        style={[styles.fabButton, styles.salesButton]}
-        onPress={() => navigation.navigate("SalesHistory")}
-      >
-        <Ionicons name="receipt" size={24} color={COLORS.textLight} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.fabButton, styles.salesButton]}
+          onPress={() => navigation.navigate("SalesHistory")}
+        >
+          <Ionicons name="receipt" size={24} color={COLORS.textLight} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -114,6 +148,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     width: '100%',
+  },
+  resultsText: {
+    fontSize: 14,
+    color: COLORS.textDark,
+    marginBottom: 15,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   listContent: {
     paddingBottom: 80,

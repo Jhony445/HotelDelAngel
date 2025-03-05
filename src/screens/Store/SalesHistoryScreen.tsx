@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, FlatList, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { RootStackParamList } from "../../navigation/navigationTypes";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { getSales, Sale } from "../../services/StoreServices/ProductService";
+import MonthFilter from "../../components/ComponentsStore/MonthFilter";
+import { format } from 'date-fns';
 
 const COLORS = {
     primary: '#2e7d32',
@@ -16,17 +18,27 @@ const COLORS = {
     error: '#d32f2f'
 };
 
+const months = [
+    'Enero', 'Febrero', 'Marzo', 'Abril',
+    'Mayo', 'Junio', 'Julio', 'Agosto',
+    'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
 const SalesHistoryScreen: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [sales, setSales] = useState<Sale[]>([]);
+    const [filteredSales, setFilteredSales] = useState<Sale[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
     const loadSales = async () => {
         try {
             setLoading(true);
             const salesData = await getSales();
             setSales(salesData);
+            setFilteredSales(salesData);
             setError(null);
         } catch (err) {
             setError("Error al cargar el historial");
@@ -36,12 +48,27 @@ const SalesHistoryScreen: React.FC = () => {
         }
     };
 
+    const filterSales = (month: number | null, year: number | null) => {
+        if (month === null || year === null) {
+            setFilteredSales(sales);
+            return;
+        }
+        
+        const filtered = sales.filter(sale => {
+            const saleDate = new Date(sale.date);
+            return saleDate.getMonth() === month && saleDate.getFullYear() === year;
+        });
+        
+        setFilteredSales(filtered);
+    };
+
     useFocusEffect(
-        React.useCallback(() => {
+        useCallback(() => {
             loadSales();
+            setSelectedMonth(null);
+            setSelectedYear(null);
         }, [])
     );
-
 
     const SaleHistoryItem = ({ item }: { item: Sale }) => (
         <TouchableOpacity style={styles.card}>
@@ -59,13 +86,7 @@ const SalesHistoryScreen: React.FC = () => {
                 <View style={styles.detailItem}>
                     <Ionicons name="calendar" size={16} color={COLORS.primary} />
                     <Text style={styles.detailText}>
-                        {item.date.toLocaleDateString('es-MX', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}
+                        {format(new Date(item.date), 'dd/MM/yyyy HH:mm')}
                     </Text>
                 </View>
             </View>
@@ -95,14 +116,34 @@ const SalesHistoryScreen: React.FC = () => {
     return (
         <View style={styles.container}>
             <FlatList
-                data={sales}
+                data={filteredSales}
                 keyExtractor={(item) => item.id}
+                ListHeaderComponent={
+                    <>
+                        <MonthFilter 
+                            onFilter={(month, year) => {
+                                setSelectedMonth(month);
+                                setSelectedYear(year);
+                                filterSales(month, year);
+                            }} 
+                        />
+                        {selectedMonth !== null && selectedYear !== null && (
+                            <Text style={styles.filterText}>
+                                Mostrando ventas de {months[selectedMonth]} {selectedYear}
+                            </Text>
+                        )}
+                    </>
+                }
                 renderItem={({ item }) => <SaleHistoryItem item={item} />}
                 contentContainerStyle={styles.listContent}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Ionicons name="receipt-outline" size={48} color={COLORS.primary} />
-                        <Text style={styles.emptyText}>No hay ventas registradas</Text>
+                        <Text style={styles.emptyText}>
+                            {selectedMonth !== null 
+                                ? `No hay ventas en ${months[selectedMonth]} ${selectedYear}`
+                                : 'No hay ventas registradas'}
+                        </Text>
                     </View>
                 }
             />
@@ -110,13 +151,13 @@ const SalesHistoryScreen: React.FC = () => {
     );
 };
 
-
 const styles = StyleSheet.create({
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    }, errorContainer: {
+    },
+    errorContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -202,6 +243,13 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
         marginTop: 16,
         textAlign: 'center',
+    },
+    filterText: {
+        textAlign: 'center',
+        color: COLORS.textDark,
+        marginVertical: 10,
+        fontSize: 14,
+        fontStyle: 'italic',
     },
 });
 
