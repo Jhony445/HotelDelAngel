@@ -37,7 +37,6 @@ export interface Sale {
 const PRODUCTS_COLLECTION = "products";
 const SALES_COLLECTION = "sales";
 
-// Crear producto
 export const createProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'status'>) => {
     try {
         const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
@@ -142,7 +141,6 @@ export const getAllProducts = async (): Promise<Product[]> => {
     }
 };
 
-//Metodos de ventas
 export const createSale = async (saleData: Omit<Sale, 'id' | 'date'>) => {
     try {
         const docRef = await addDoc(collection(db, SALES_COLLECTION), {

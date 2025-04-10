@@ -94,21 +94,45 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
     }
   };
 
+  const [startDate, setStartDate] = useState(new Date(reservation.startDate));
+  const [endDate, setEndDate] = useState(
+    new Date(reservation.endDate || reservation.startDate)
+  );
+
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const handleStartDateChange = (_event: any, selectedDate?: Date) => {
+    setShowStartPicker(false);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+      if (endDate < selectedDate) {
+        setEndDate(selectedDate);
+      }
+    }
+  };
+
+  const handleEndDateChange = (_event: any, selectedDate?: Date) => {
+    setShowEndPicker(false);
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
+
+
   const handleUpdate = async () => {
-    if (!room || !date) {
-      Alert.alert("Error", "Selecciona una habitación y una fecha.");
+    if (!room || !startDate || !endDate) {
+      Alert.alert("Error", "Selecciona una habitación y las fechas.");
       return;
     }
 
     setLoading(true);
     try {
-      const days = parseInt(numDays, 10) || 1;
-      const newStartDate = new Date(date);
+      const newStartDate = new Date(startDate);
       newStartDate.setHours(0, 0, 0, 0);
-
-      const newEndDate = new Date(date);
-      newEndDate.setDate(newEndDate.getDate() + days);
+      const newEndDate = new Date(endDate);
       newEndDate.setHours(0, 0, 0, 0);
+
       const isAvailable = await checkRoomAvailabilityForUpdate(
         room,
         newStartDate,
@@ -144,7 +168,10 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
       Alert.alert("¡Éxito!", "La reservación se actualizó correctamente.");
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "No se pudo actualizar la reservación.");
+      Alert.alert(
+        "Error",
+        error.message || "No se pudo actualizar la reservación."
+      );
     } finally {
       setLoading(false);
     }
@@ -199,14 +226,14 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
               </Menu>
             </View>
 
-            {/* Selector de Fecha */}
+            {/* Selector de Fecha de Inicio */}
             <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
+              onPress={() => setShowStartPicker(true)}
               style={styles.dateInput}
             >
               <TextInput
-                label="Fecha de Inicio"
-                value={date.toLocaleDateString()}
+                label="Fecha de Entrada"
+                value={startDate.toLocaleDateString()}
                 style={styles.input}
                 editable={false}
                 mode="outlined"
@@ -214,16 +241,39 @@ const UpdateReservationScreen: React.FC<UpdateReservationScreenProps> = ({
                 left={<TextInput.Icon icon="calendar" />}
               />
             </TouchableOpacity>
-            <TextInput
-              label="Número de Días"
-              value={numDays}
-              onChangeText={(text) => setNumDays(text.replace(/[^0-9]/g, ""))}
-              style={styles.input}
-              keyboardType="numeric"
-              mode="outlined"
-              theme={inputTheme}
-              left={<TextInput.Icon icon="calendar-range" />}
-            />
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleStartDateChange}
+              />
+            )}
+
+            {/* Selector de Fecha de Fin */}
+            <TouchableOpacity
+              onPress={() => setShowEndPicker(true)}
+              style={styles.dateInput}
+            >
+              <TextInput
+                label="Fecha de Salida"
+                value={endDate.toLocaleDateString()}
+                style={styles.input}
+                editable={false}
+                mode="outlined"
+                theme={inputTheme}
+                left={<TextInput.Icon icon="calendar-range" />}
+              />
+            </TouchableOpacity>
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleEndDateChange}
+                minimumDate={startDate}
+              />
+            )}
           </View>
 
           {/* Sección Huéspedes */}

@@ -60,7 +60,7 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({ reservaId, onUpdate, onDelete
           </TouchableOpacity>
         }
         style={styles.menu}
-        contentStyle={{ backgroundColor: "#ffffff" }} // Forzamos fondo blanco
+        contentStyle={{ backgroundColor: "#ffffff" }}
       >
         <Menu.Item
           onPress={() => {
@@ -68,17 +68,16 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({ reservaId, onUpdate, onDelete
             onUpdate();
           }}
           title="Actualizar"
-          titleStyle={{ color: "#000000" }} // Texto en negro
+          titleStyle={{ color: "#000000" }}
         />
         <Divider />
         <Menu.Item
           onPress={confirmDelete}
           title="Eliminar"
-          titleStyle={{ color: "#000000" }} // Texto en negro
+          titleStyle={{ color: "#000000" }}
         />
       </Menu>
 
-      {/* Modal para mostrar el ActivityIndicator mientras se elimina */}
       <Modal visible={loading} transparent animationType="fade">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

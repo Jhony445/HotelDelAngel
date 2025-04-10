@@ -77,13 +77,11 @@ export const checkRoomAvailabilityForUpdate = async (
     if (querySnapshot.empty) return true;
 
     return !querySnapshot.docs.some((doc) => {
-      if (doc.id === reservationId) return false; // Ignorar la reserva actual
+      if (doc.id === reservationId) return false;
 
       const reserva = doc.data();
       const rStart = normalizeDate(reserva.startDate.toDate());
       const rEnd = normalizeDate(reserva.endDate.toDate());
-
-      // Comprobar si hay traslape de fechas
       return (
         (rStart < normalizedEnd && rEnd > normalizedStart) ||
         (rStart <= normalizedStart && rEnd >= normalizedEnd)

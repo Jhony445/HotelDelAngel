@@ -14,10 +14,13 @@ import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../services/ReservationServices/firebaseConfig";
 
 const CalendarScreen = () => {
+  const today = new Date();
+  const formattedToday = `${today.getFullYear()}-${("0" + (today.getMonth() + 1)).slice(-2)}-${("0" + today.getDate()).slice(-2)}`;
   const [reservations, setReservations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(formattedToday);
+  
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [calendarHeight, setCalendarHeight] = useState(360);
 

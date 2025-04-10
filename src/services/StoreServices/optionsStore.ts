@@ -5,7 +5,6 @@ import { Alert } from "react-native";
 import { db } from "./firebaseConfigStore";
 import { collection, getDocs, writeBatch } from "firebase/firestore";
 
-// Exportar inventario (solo productos activos)
 export const exportInventoryData = async () => {
     try {
         const products = await getProducts();
@@ -34,7 +33,6 @@ export const exportInventoryData = async () => {
     }
 };
 
-// Backup completo (productos + ventas)
 export const backupInventoryData = async () => {
     try {
         const [products, sales] = await Promise.all([
@@ -81,11 +79,9 @@ export const deleteAllStoreData = async () => {
     try {
         const batch = writeBatch(db);
 
-        // Eliminar productos
         const productsSnapshot = await getDocs(collection(db, "products"));
         productsSnapshot.forEach((doc) => batch.delete(doc.ref));
 
-        // Eliminar ventas
         const salesSnapshot = await getDocs(collection(db, "sales"));
         salesSnapshot.forEach((doc) => batch.delete(doc.ref));
 
@@ -106,7 +102,6 @@ export const exportSalesData = async () => {
             return;
         }
 
-        // Crear contenido CSV
         const csvHeader = "Fecha,Producto,Cantidad,Total,ID Producto\n";
         const csvRows = sales.map(sale => {
             const fecha = sale.date.toLocaleString('es-MX');

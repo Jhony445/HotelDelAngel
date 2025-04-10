@@ -83,12 +83,12 @@ const ReservationDetailsScreen = ({ route, navigation }: { route: DetailsRoutePr
         </View>
         <DetailRow
           icon="calendar-check"
-          label="Fecha inicio"
+          label="Fecha Entrada"
           value={formatDate(reservation.startDate)}
         />
         <DetailRow
           icon="calendar-check"
-          label="Fecha fin"
+          label="Fecha de Salida"
           value={formatDate(reservation.endDate)}
         />
         <DetailRow icon="calendar-clock" label="Creación registro" value={formatDate(reservation.createdAt)} />

@@ -30,7 +30,6 @@ const StoreSettingsScreen: React.FC = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Configuración del Inventario */}
       <View style={styles.card}>
         <TouchableOpacity style={styles.optionItem} onPress={handleExportStoreData}>
           <Ionicons name="document-text-outline" size={24} color="#1E88E5" />
@@ -62,7 +61,6 @@ const StoreSettingsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Zona Peligrosa */}
       <View style={[styles.card, styles.dangerCard]}>
         <Text style={styles.dangerTitle}>Acciones Destructivas</Text>
 

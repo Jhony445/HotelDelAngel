@@ -48,7 +48,12 @@ const AddReservationFormScreen = () => {
   const [paymentMethodType, setPaymentMethodType] = useState('');
   const [manualAdvancePayment, setManualAdvancePayment] = useState(false);
 
-  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L', '1-Posada', '2-Posada', '3-Posada'];
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const roomOptions = ['301-D', '302-E', '303-F', '304-G', '305-H', '201-I', '202-J', '204-L', '401-M', '1-Posada', '2-Posada', '3-Posada'];
   const paymentMethodValues: { [key: string]: string } = {
     "Reservación pagada": "Pago completo",
     "Reservación (50%)": "Pago parcial",
@@ -90,8 +95,26 @@ const AddReservationFormScreen = () => {
     }
   };
 
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartPicker(false);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+      setEndDate(null);
+      setNumDays('1');
+    }
+  };
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndPicker(false);
+    if (selectedDate && startDate) {
+      setEndDate(selectedDate);
+      const diffTime = Math.abs(selectedDate.getTime() - startDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setNumDays(diffDays.toString());
+    }
+  };
+
   const handleNextStep = async () => {
-    if (!room || !date) {
+    if (!room || !startDate) {
       Alert.alert("Error", "Selecciona una habitación y una fecha");
       return;
     }
@@ -100,13 +123,12 @@ const AddReservationFormScreen = () => {
       Alert.alert("Error", "Número de días inválido");
       return;
     }
-    const endDate = new Date(date);
-    endDate.setDate(endDate.getDate() + days);
-    endDate.setHours(0, 0, 0, 0);
+    const computedEndDate = new Date(startDate);
+    computedEndDate.setDate(computedEndDate.getDate() + days);
+    computedEndDate.setHours(0, 0, 0, 0);
 
     try {
-      const isAvailable = await checkRoomAvailability(room, date, endDate);
-
+      const isAvailable = await checkRoomAvailability(room, startDate, computedEndDate);
       if (!isAvailable) {
         Alert.alert(
           "Habitación ocupada",
@@ -114,15 +136,21 @@ const AddReservationFormScreen = () => {
         );
         return;
       }
-
       setCurrentStep(2);
     } catch (error) {
       Alert.alert("Error", "No se pudo verificar la disponibilidad.");
     }
   };
+
+
   const handleSubmit = async () => {
-    if (!guestName || !phone || !amount || !paymentMethod || !paymentMethodType) {
+    if (!guestName || !amount || !paymentMethod || !paymentMethodType) {
       Alert.alert("Error", "Por favor completa todos los campos.");
+      return;
+    }
+
+    if (!startDate) {
+      Alert.alert("Error", "Selecciona una fecha de inicio.");
       return;
     }
 
@@ -130,17 +158,17 @@ const AddReservationFormScreen = () => {
     setDialogVisible(true);
     setDialogMessage("Guardando reserva...");
     const days = parseInt(numDays, 10) || 1;
-    const endDate = new Date(date!);
-    endDate.setDate(endDate.getDate() + days);
-    endDate.setHours(0, 0, 0, 0);
+    const computedEndDate = new Date(startDate);
+    computedEndDate.setDate(computedEndDate.getDate() + days);
+    computedEndDate.setHours(0, 0, 0, 0);
 
     try {
       const status = paymentMethod === "Reservación (50%)" ? "Reservado" : "Pagado";
 
       await agregarReserva({
         room,
-        startDate: date!,
-        endDate,
+        startDate: startDate,
+        endDate: computedEndDate,
         guestName,
         phone,
         company: company || 'No especificado',
@@ -163,6 +191,7 @@ const AddReservationFormScreen = () => {
     }
   };
 
+
   return (
     <Provider theme={forcedLightTheme}>
       <KeyboardAvoidingView
@@ -177,7 +206,6 @@ const AddReservationFormScreen = () => {
           <View style={styles.container}>
             {currentStep === 1 && (
               <>
-                {/* Selector de Habitación */}
                 <Menu
                   visible={menuVisible}
                   onDismiss={() => setMenuVisible(false)}
@@ -211,51 +239,55 @@ const AddReservationFormScreen = () => {
                     />
                   ))}
                 </Menu>
-
-                {/* Selector de Fecha */}
-                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                <TouchableOpacity onPress={() => setShowStartPicker(true)}>
                   <View pointerEvents="box-only">
                     <TextInput
-                      label="Seleccionar fecha"
-                      value={date ? date.toLocaleDateString() : ''}
+                      label="Fecha de Entrada"
+                      value={startDate ? startDate.toLocaleDateString() : ''}
                       mode="outlined"
-                      style={[styles.input, !date && styles.placeholderText]}
+                      style={[styles.input, !startDate && styles.placeholderText]}
                       editable={false}
                       left={<TextInput.Icon icon="calendar" />}
                     />
                   </View>
                 </TouchableOpacity>
-                {showDatePicker && (
+                {showStartPicker && (
                   <DateTimePicker
-                    value={date || new Date()}
+                    value={startDate || new Date()}
                     mode="date"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={handleDateChange}
+                    onChange={handleStartDateChange}
                   />
                 )}
-
-                {/* Número de días */}
-                <TextInput
-                  label="¿Cuántos días?"
-                  value={numDays}
-                  mode="outlined"
-                  style={[styles.input]}
-                  keyboardType="numeric"
-                  onChangeText={(text) => {
-                    // Aseguramos que solo sean dígitos
-                    const numericValue = text.replace(/[^0-9]/g, '');
-                    setNumDays(numericValue);
-                    handleInputChange();
-                  }}
-                  left={<TextInput.Icon icon="calendar-range" />}
-                />
-
-                {/* Botón Siguiente */}
+                <TouchableOpacity onPress={() => {
+                  if (startDate) setShowEndPicker(true);
+                }}>
+                  <View pointerEvents="box-only">
+                    <TextInput
+                      label="Fecha de Salida"
+                      value={endDate ? endDate.toLocaleDateString() : ''}
+                      mode="outlined"
+                      style={[styles.input, !endDate && styles.placeholderText]}
+                      editable={false}
+                      left={<TextInput.Icon icon="calendar-range" />}
+                    />
+                  </View>
+                </TouchableOpacity>
+                {showEndPicker && (
+                  <DateTimePicker
+                    value={endDate || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleEndDateChange}
+                    minimumDate={startDate || new Date()}
+                  />
+                )}
+                <Text>Noches: {numDays}</Text>
                 <Button
                   mode="contained"
                   onPress={handleNextStep}
                   style={styles.button}
-                  disabled={!room || !date}
+                  disabled={!room || !startDate}
                 >
                   Siguiente
                 </Button>
@@ -265,7 +297,6 @@ const AddReservationFormScreen = () => {
               <>
                 {currentStep === 2 && (
                   <>
-                    {/* Tipo de Pago (Reservación) */}
                     <Menu
                       visible={paymentMenuVisible}
                       onDismiss={() => setPaymentMenuVisible(false)}
@@ -301,8 +332,6 @@ const AddReservationFormScreen = () => {
                         />
                       ))}
                     </Menu>
-
-                    {/* Método de Pago (Efectivo/Tarjeta) */}
                     <Menu
                       visible={methodMenuVisible}
                       onDismiss={() => setMethodMenuVisible(false)}
@@ -338,7 +367,6 @@ const AddReservationFormScreen = () => {
                         />
                       ))}
                     </Menu>
-                    {/* Campos Dinámicos Según el Tipo de Pago */}
                     {paymentMethod === 'Reservación (50%)' && (
                       <>
                         <TextInput
@@ -347,7 +375,6 @@ const AddReservationFormScreen = () => {
                           onChangeText={(text) => {
                             const numericValue = text.replace(/[^0-9.]/g, '');
                             setAmount(numericValue);
-                            // Si no se ha editado manualmente el adelanto, se recalcula automáticamente
                             if (!manualAdvancePayment) {
                               setAdvancePayment((parseFloat(numericValue || '0') * 0.5).toFixed(2));
                             }
@@ -365,11 +392,9 @@ const AddReservationFormScreen = () => {
                           onChangeText={(text) => {
                             const numericValue = text.replace(/[^0-9.]/g, '');
                             setAdvancePayment(numericValue);
-                            // Se marca que el usuario ha editado manualmente (si el campo no está vacío)
                             setManualAdvancePayment(numericValue !== "");
                           }}
                           onBlur={() => {
-                            // Si al salir el campo está vacío, se restaura el cálculo automático
                             if (advancePayment.trim() === "") {
                               const autoValue = (parseFloat(amount || '0') * 0.5).toFixed(2);
                               setAdvancePayment(autoValue);
@@ -417,7 +442,6 @@ const AddReservationFormScreen = () => {
                     )}
                   </>
                 )}
-                {/* Información del Cliente */}
                 <TextInput
                   label="Nombre del Cliente"
                   value={guestName}
@@ -432,7 +456,7 @@ const AddReservationFormScreen = () => {
                 />
 
                 <TextInput
-                  label="Teléfono"
+                  label="Teléfono (Opcional)"
                   value={phone}
                   onChangeText={(text) => {
                     setPhone(text);
@@ -488,7 +512,7 @@ const AddReservationFormScreen = () => {
                     onPress={handleSubmit}
                     style={styles.buttonSave}
                     disabled={
-                      !guestName || !phone || !amount || !paymentMethod || !paymentMethodType
+                      !guestName || !amount || !paymentMethod || !paymentMethodType
                     }
                   >
                     Guardar

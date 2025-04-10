@@ -21,7 +21,6 @@ const CalendarPicker: React.FC<CalendarPickerProps> = ({
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [containerHeight, setContainerHeight] = useState(360);
 
-  // Arreglos de nombres para el calendario (respaldo y para el renderHeader)
   const monthNames = [
     "Enero", "Febrero", "Marzo", "Abril",
     "Mayo", "Junio", "Julio", "Agosto",

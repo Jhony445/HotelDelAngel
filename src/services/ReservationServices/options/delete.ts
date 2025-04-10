@@ -1,5 +1,5 @@
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "../firebaseConfig"; // Asegúrate de importar la instancia correcta de Firestore
+import { db } from "../firebaseConfig";
 import { Alert } from "react-native";
 
 export const eliminarTodasLasReservaciones = async () => {
